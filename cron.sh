@@ -14,4 +14,4 @@ git commit -m "Updated generated_config.yml"
 
 # push all branches
 git push --force --all origin
-git checkout master
+git checkout main
