@@ -1,0 +1,67 @@
+jobs:
+  deploy-el7:
+    docker: &id001
+    - {image: kroniak/ssh-client}
+    environment: {DISTRO: el7}
+    steps: &id002
+    - attach_workspace: {at: /output}
+    - add_ssh_keys:
+        fingerprints: ['8c:a4:dd:2c:47:4c:63:aa:90:0b:e0:d6:15:be:87:82']
+    - run: {command: 'ssh -o StrictHostKeyChecking=no $GPS_BUILD_USER@$GPS_BUILD_SERVER
+          "mkdir -p ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO"
+
+          ', name: Ensure project specific upload directory to avoid deploy collisions}
+    - run: {command: 'scp -o StrictHostKeyChecking=no -q -r *.rpm $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/
+
+          ', name: Deploy all RPMs to GetPageSpeed repo.}
+    - run: {command: ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER
+          "nohup ~/scripts/incoming.sh $CIRCLE_PROJECT_REPONAME/$DISTRO > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/process.log
+          2>&1&", name: Trigger Deploy Hook.}
+    working_directory: /output
+  deploy-el8:
+    docker: *id001
+    environment: {DISTRO: el8}
+    steps: *id002
+    working_directory: /output
+  deploy-fc33:
+    docker: *id001
+    environment: {DISTRO: fc33}
+    steps: *id002
+    working_directory: /output
+  deploy-fc34:
+    docker: *id001
+    environment: {DISTRO: fc34}
+    steps: *id002
+    working_directory: /output
+  el7:
+    docker:
+    - {image: 'getpagespeed/rpmbuilder:centos-7'}
+    environment: &id003 {RPMLINT: 1}
+    steps: &id004
+    - checkout
+    - run: {command: build, name: 'Run the build itself: this will do rpmlint and
+          check RPMs existence among other things.'}
+    - persist_to_workspace:
+        paths: ['*.rpm']
+        root: /output
+    working_directory: /sources
+  el8:
+    docker:
+    - {image: 'getpagespeed/rpmbuilder:centos-8'}
+    environment: *id003
+    steps: *id004
+    working_directory: /sources
+  fc33:
+    docker:
+    - {image: 'getpagespeed/rpmbuilder:fedora-33'}
+    environment: *id003
+    steps: *id004
+    working_directory: /sources
+  fc34:
+    docker:
+    - {image: 'getpagespeed/rpmbuilder:fedora-34'}
+    environment: *id003
+    steps: *id004
+    working_directory: /sources
+version: '2.1'
+workflows: {version: 2}
