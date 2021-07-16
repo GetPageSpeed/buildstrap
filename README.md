@@ -1,2 +1,3 @@
 # buildstrap
-Bootstrap generation of CircleCI configuration for RPM builds
+
+Bootstrap generation of CircleCI config.yml for RPM builds of latest OS releases.

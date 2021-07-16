@@ -1,0 +1,11 @@
+---
+
+distros:
+  rhel:
+    dist: el
+    docker-tag-base: centos
+  fedora:
+    dist: fc
+    docker-tag-base: fedora
+
+
