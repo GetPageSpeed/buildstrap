@@ -15,7 +15,9 @@ with open("matrix.yml", 'r') as f:
         exit(1)
 
 distros = distros_config['distros']
-for distro in distros:
+for distro, distro_config in distros.items():
+    if 'versions_check' in distro_config and not distro_config['versions_check']:
+        continue
     distro_version = lastversion.latest(distro).release[0]
     # print(f"{distro}'s latest major version is {distro_version}")
     distros[distro]['versions'] = [

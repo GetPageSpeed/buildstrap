@@ -1,8 +1,20 @@
 jobs:
-  deploy-el7:
+  amzn2:
+    docker:
+    - {image: 'getpagespeed/rpmbuilder:amazonlinux-2'}
+    environment: &id003 {RPMLINT: 1}
+    steps: &id004
+    - checkout
+    - run: {command: build, name: 'Run the build itself: this will do rpmlint and
+          check RPMs existence among other things.'}
+    - persist_to_workspace:
+        paths: ['*.rpm']
+        root: /output
+    working_directory: /sources
+  deploy-amzn2:
     docker: &id001
     - {image: kroniak/ssh-client}
-    environment: {DISTRO: el7}
+    environment: {DISTRO: amzn2}
     steps: &id002
     - attach_workspace: {at: /output}
     - add_ssh_keys:
@@ -17,6 +29,11 @@ jobs:
     - run: {command: ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER
           "nohup ~/scripts/incoming.sh $CIRCLE_PROJECT_REPONAME/$DISTRO > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/process.log
           2>&1&", name: Trigger Deploy Hook.}
+    working_directory: /output
+  deploy-el7:
+    docker: *id001
+    environment: {DISTRO: el7}
+    steps: *id002
     working_directory: /output
   deploy-el8:
     docker: *id001
@@ -36,14 +53,8 @@ jobs:
   el7:
     docker:
     - {image: 'getpagespeed/rpmbuilder:centos-7'}
-    environment: &id003 {RPMLINT: 1}
-    steps: &id004
-    - checkout
-    - run: {command: build, name: 'Run the build itself: this will do rpmlint and
-          check RPMs existence among other things.'}
-    - persist_to_workspace:
-        paths: ['*.rpm']
-        root: /output
+    environment: *id003
+    steps: *id004
     working_directory: /sources
   el8:
     docker:
@@ -65,6 +76,12 @@ jobs:
     working_directory: /sources
 version: '2.1'
 workflows:
+  build-deploy-amzn2:
+    jobs:
+    - amzn2
+    - deploy-amzn2:
+        context: org-global
+        requires: [amzn2]
   build-deploy-el7:
     jobs:
     - el7
