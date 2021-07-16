@@ -73,6 +73,7 @@ with open('header.yml') as f:
                     ]
                 }
             })
+            config['workflows'][distro_workflow_name] = distro_workflow
 
 with open('generated_config.yml', 'w') as f:
     yaml.dump(config, f, default_flow_style=None)

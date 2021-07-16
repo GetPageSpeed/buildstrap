@@ -64,4 +64,29 @@ jobs:
     steps: *id004
     working_directory: /sources
 version: '2.1'
-workflows: {version: 2}
+workflows:
+  build-deploy-el7:
+    jobs:
+    - el7
+    - deploy-el7:
+        context: org-global
+        requires: [el7]
+  build-deploy-el8:
+    jobs:
+    - el8
+    - deploy-el8:
+        context: org-global
+        requires: [el8]
+  build-deploy-fc33:
+    jobs:
+    - fc33
+    - deploy-fc33:
+        context: org-global
+        requires: [fc33]
+  build-deploy-fc34:
+    jobs:
+    - fc34
+    - deploy-fc34:
+        context: org-global
+        requires: [fc34]
+  version: 2
