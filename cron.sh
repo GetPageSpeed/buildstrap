@@ -8,7 +8,7 @@ git pull >/dev/null
 git clean -fX >/dev/null
 
 git checkout main
-python ./generate-config.py
+./generate-config.py
 git add --all .
 git commit -m "Updated generated_config.yml"
 
