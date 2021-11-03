@@ -40,14 +40,14 @@ jobs:
     environment: {DISTRO: el8}
     steps: *id002
     working_directory: /output
-  deploy-fc33:
-    docker: *id001
-    environment: {DISTRO: fc33}
-    steps: *id002
-    working_directory: /output
   deploy-fc34:
     docker: *id001
     environment: {DISTRO: fc34}
+    steps: *id002
+    working_directory: /output
+  deploy-fc35:
+    docker: *id001
+    environment: {DISTRO: fc35}
     steps: *id002
     working_directory: /output
   el7:
@@ -62,15 +62,15 @@ jobs:
     environment: *id003
     steps: *id004
     working_directory: /sources
-  fc33:
-    docker:
-    - {image: 'getpagespeed/rpmbuilder:fedora-33'}
-    environment: *id003
-    steps: *id004
-    working_directory: /sources
   fc34:
     docker:
     - {image: 'getpagespeed/rpmbuilder:fedora-34'}
+    environment: *id003
+    steps: *id004
+    working_directory: /sources
+  fc35:
+    docker:
+    - {image: 'getpagespeed/rpmbuilder:fedora-35'}
     environment: *id003
     steps: *id004
     working_directory: /sources
@@ -94,16 +94,16 @@ workflows:
     - deploy-el8:
         context: org-global
         requires: [el8]
-  build-deploy-fc33:
-    jobs:
-    - fc33
-    - deploy-fc33:
-        context: org-global
-        requires: [fc33]
   build-deploy-fc34:
     jobs:
     - fc34
     - deploy-fc34:
         context: org-global
         requires: [fc34]
+  build-deploy-fc35:
+    jobs:
+    - fc35
+    - deploy-fc35:
+        context: org-global
+        requires: [fc35]
   version: 2
