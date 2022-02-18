@@ -47,3 +47,11 @@ This can be implemented by triggering CircleCi workflows for individual spec pro
 
 For a software that is regularly updated, triggering workflows isn't required...
 
+Anyway, triggering the build is possible via API like the following, e.g.:
+
+```bash
+curl --request POST \
+  --url https://circleci.com/api/v2/project/github/GetPageSpeed/guetzli-rpm/pipeline \
+  --header 'Circle-Token: xxx' \
+  --header 'content-type: application/json' 
+```

@@ -1,5 +1,8 @@
 version: 2.1
-
+parameters:
+  run_workflow_setup:
+    default: true
+    type: boolean
 # this allows you to use CircleCI's dynamic configuration feature
 setup: true
 
@@ -24,5 +27,6 @@ jobs:
 # our single workflow, that triggers the setup job defined above
 workflows:
   setup:
+    when: << pipeline.parameters.run_workflow_setup >>
     jobs:
       - setup
