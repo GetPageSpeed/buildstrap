@@ -17,22 +17,39 @@ executors:
       rpmlint:
         type: integer
         default: 1
+      plesk:
+        type: integer
+        default: 0
     docker:
       - image: getpagespeed/rpmbuilder:<< parameters.dist >>
     working_directory: /sources
     environment:
       RPMLINT: << parameters.rpmlint >>
+      PLESK: << parameters.plesk >>
 jobs:
   build:
     parameters:
       dist:
         description: "The dist tag of OS to build for"
         type: string
+      plesk:
+        description: "Plesk major release version number, e.g. 18"
+        type: integer
+        default: 0
     executor:
       name: rpmbuilder
       dist: << parameters.dist >>
+      plesk: << parameters.plesk >>
     steps:
       - checkout
+      - run:
+          name: "Set up RPM macro reflecting the NGINX branch"
+          command: |
+            echo "%nginx_branch ${CIRCLE_BRANCH}" >> rpmmacros
+      - run:
+          name: "Set up %plesk macro if passed by a job"
+          command: |
+            [ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
       - run:
           name: "Run the build itself: this will do rpmlint and check RPMs existence among other things."
           command: build
@@ -59,15 +76,15 @@ jobs:
           command: >
             ssh -o StrictHostKeyChecking=no
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
-            "mkdir -p ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO"
+            "mkdir -p ~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}"
       - run:
           name: "Deploy all RPMs to GetPageSpeed repo."
           command: >
             scp -o StrictHostKeyChecking=no -q -r *.rpm
-            $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/
+            $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/
       - run:
           name: "Trigger Deploy Hook."
           command: >
             ssh -o StrictHostKeyChecking=no -q
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
-            "nohup ~/scripts/incoming.sh $CIRCLE_PROJECT_REPONAME/$DISTRO/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/process.log 2>&1&"
+            "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}/process.log 2>&1&"

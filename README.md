@@ -3,10 +3,16 @@
 Bootstrap generation of CircleCI config.yml for RPM builds of the latest OS releases.
 Creates `generated_config.yml` that builds and deploys RPM against supported OS versions.
 
+## Benefits
+
+This allows for a more centralized and unified `config.yml` across many spec repositories.
+Furthermore, the `config.yml` itself becomes more dynamic and auto-maintained to have builds
+against recent operating systems.
+
 ## Setup
 
 The buildstrap automatically updates `generated_config.yml` by running `~/buildstrap/cron.sh` on
-the GetPageSpeed build server.
+the GetPageSpeed build server daily.
 
 The list of operating systems supported can be updated in `matrix.yml`.
 The `rpmbuilder` images are tagged based on expected RPM dist tag of an operating system, e.g.
@@ -14,6 +20,11 @@ The `rpmbuilder` images are tagged based on expected RPM dist tag of an operatin
 
 So `matrix.yml` file simply specifies the operating system label as understood by `lastversion` and
 their corresponding dist tag in order to build against the correct `rpmbuilder` image.
+
+As a special case, we also create `generated_config_nginx.yml` which creates workflows bound to
+the many branches of NGINX we build against: `master` (aka `stable`), `mainline` and `plesk`.
+
+Example of implementation can be found in nginx-module-pagespeed-rpm.
 
 ## Usage in a spec project repository
 
