@@ -47,6 +47,8 @@ with open('partial_config.yml') as f:
                         'name': distro_build_job_name,
                         'dist': dist
                     },
+                },
+                {
                     'deploy': {
                         'name': distro_deploy_job_name,
                         'dist': dist,
