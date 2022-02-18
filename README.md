@@ -29,7 +29,8 @@ Example of implementation can be found in nginx-module-pagespeed-rpm.
 ### Project setup
 
 Copy `config.yml` (single branch project) or `config_nginx.yml` (NGINX module project) into
-`.circleci/config.yml' of a spec project.
+`.circleci/config.yml' of a spec project. Use `config_large.yml` for "heavy" binaries which
+likely to exceed RAM on the small default CircleCi resource class.
 
 In CircleCi, navigate to Project settings > Advanced -> Dynamic config using setup workflows.
 
