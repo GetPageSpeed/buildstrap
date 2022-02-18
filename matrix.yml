@@ -3,10 +3,8 @@
 distros:
   rhel:
     dist: el
-    docker-tag-base: centos
   fedora:
     dist: fc
-    docker-tag-base: fedora
   amazonlinux:
     dist: amzn
     versions_check: false

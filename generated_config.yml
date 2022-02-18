@@ -1,109 +1,86 @@
-jobs:
-  amzn2:
+executors:
+  deploy:
     docker:
-    - {image: 'getpagespeed/rpmbuilder:amazonlinux-2'}
-    environment: &id003 {RPMLINT: 1}
-    steps: &id004
+    - {image: kroniak/ssh-client}
+    environment: {DISTRO: << parameters.dist >>}
+    parameters:
+      dist: {type: string}
+    working_directory: /output
+  rpmbuilder:
+    docker:
+    - {image: 'getpagespeed/rpmbuilder:<< parameters.dist >>'}
+    environment: {RPMLINT: << parameters.rpmlint >>}
+    parameters:
+      dist: {type: string}
+      rpmlint: {default: 1, type: integer}
+    working_directory: /sources
+jobs:
+  build:
+    executor: {dist: << parameters.dist >>, name: rpmbuilder}
+    parameters:
+      dist: {description: The dist tag of OS to build for, type: string}
+    steps:
     - checkout
     - run: {command: build, name: 'Run the build itself: this will do rpmlint and
           check RPMs existence among other things.'}
     - persist_to_workspace:
         paths: ['*.rpm']
         root: /output
-    working_directory: /sources
-  deploy-amzn2:
-    docker: &id001
-    - {image: kroniak/ssh-client}
-    environment: {DISTRO: amzn2}
-    steps: &id002
+  deploy:
+    executor: {dist: << parameters.dist >>, name: deploy}
+    parameters:
+      dist: {description: The dist tag of OS to deploy for, type: string}
+    steps:
     - attach_workspace: {at: /output}
     - add_ssh_keys:
         fingerprints: ['8c:a4:dd:2c:47:4c:63:aa:90:0b:e0:d6:15:be:87:82']
     - run: {command: 'ssh -o StrictHostKeyChecking=no $GPS_BUILD_USER@$GPS_BUILD_SERVER
-          "mkdir -p ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO"
+          "mkdir -p ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}"
 
           ', name: Ensure project specific upload directory to avoid deploy collisions}
-    - run: {command: 'scp -o StrictHostKeyChecking=no -q -r *.rpm $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/
+    - run: {command: 'scp -o StrictHostKeyChecking=no -q -r *.rpm $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}/
 
           ', name: Deploy all RPMs to GetPageSpeed repo.}
-    - run: {command: ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER
-          "nohup ~/scripts/incoming.sh $CIRCLE_PROJECT_REPONAME/$DISTRO > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/process.log
-          2>&1&", name: Trigger Deploy Hook.}
-    working_directory: /output
-  deploy-el7:
-    docker: *id001
-    environment: {DISTRO: el7}
-    steps: *id002
-    working_directory: /output
-  deploy-el8:
-    docker: *id001
-    environment: {DISTRO: el8}
-    steps: *id002
-    working_directory: /output
-  deploy-fc33:
-    docker: *id001
-    environment: {DISTRO: fc33}
-    steps: *id002
-    working_directory: /output
-  deploy-fc34:
-    docker: *id001
-    environment: {DISTRO: fc34}
-    steps: *id002
-    working_directory: /output
-  el7:
-    docker:
-    - {image: 'getpagespeed/rpmbuilder:centos-7'}
-    environment: *id003
-    steps: *id004
-    working_directory: /sources
-  el8:
-    docker:
-    - {image: 'getpagespeed/rpmbuilder:centos-8'}
-    environment: *id003
-    steps: *id004
-    working_directory: /sources
-  fc33:
-    docker:
-    - {image: 'getpagespeed/rpmbuilder:fedora-33'}
-    environment: *id003
-    steps: *id004
-    working_directory: /sources
-  fc34:
-    docker:
-    - {image: 'getpagespeed/rpmbuilder:fedora-34'}
-    environment: *id003
-    steps: *id004
-    working_directory: /sources
-version: '2.1'
+    - run: {command: 'ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER
+          "nohup ~/scripts/incoming-${CIRCLE_BRANCH}.sh $CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}
+          > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}/process.log
+          2>&1&"
+
+          ', name: Trigger Deploy Hook.}
+version: 2.1
 workflows:
   build-deploy-amzn2:
-    jobs:
-    - amzn2
-    - deploy-amzn2:
-        context: org-global
-        requires: [amzn2]
+  - build: {dist: amzn2, name: build-amzn2}
+    deploy:
+      context: org-global
+      dist: amzn2
+      name: deploy-amzn2
+      requires: [build-amzn2]
   build-deploy-el7:
-    jobs:
-    - el7
-    - deploy-el7:
-        context: org-global
-        requires: [el7]
+  - build: {dist: el7, name: build-el7}
+    deploy:
+      context: org-global
+      dist: el7
+      name: deploy-el7
+      requires: [build-el7]
   build-deploy-el8:
-    jobs:
-    - el8
-    - deploy-el8:
-        context: org-global
-        requires: [el8]
-  build-deploy-fc33:
-    jobs:
-    - fc33
-    - deploy-fc33:
-        context: org-global
-        requires: [fc33]
+  - build: {dist: el8, name: build-el8}
+    deploy:
+      context: org-global
+      dist: el8
+      name: deploy-el8
+      requires: [build-el8]
   build-deploy-fc34:
-    jobs:
-    - fc34
-    - deploy-fc34:
-        context: org-global
-        requires: [fc34]
-  version: 2
+  - build: {dist: fc34, name: build-fc34}
+    deploy:
+      context: org-global
+      dist: fc34
+      name: deploy-fc34
+      requires: [build-fc34]
+  build-deploy-fc35:
+  - build: {dist: fc35, name: build-fc35}
+    deploy:
+      context: org-global
+      dist: fc35
+      name: deploy-fc35
+      requires: [build-fc35]
