@@ -26,6 +26,13 @@ the many branches of NGINX we build against: `master` (aka `stable`), `mainline`
 
 Example of implementation can be found in nginx-module-pagespeed-rpm.
 
+### Project setup
+
+Copy `config.yml` (single branch project) or `config_nginx.yml` (NGINX module project) into
+`.circleci/config.yml' of a spec project.
+
+In CircleCi, navigate to Project settings > Advanced -> Dynamic config using setup workflows.
+
 ## Usage in a spec project repository
 
 Refer to [`wrk` example](https://github.com/GetPageSpeed/wrk-rpm/blob/master/.circleci/config.yml).
