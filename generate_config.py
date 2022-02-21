@@ -34,11 +34,18 @@ nginx_branches = {
     'plesk': 'plesk'
 }
 
+# for standard RPM spec repo
 config = {
     'workflows': {}
 }
 
+# for nginx module RPM spec repo
 config_nginx = {
+    'workflows': {}
+}
+
+# for software source repo with the RPM spec file, e.g. fds
+config_self = {
     'workflows': {}
 }
 
@@ -110,6 +117,41 @@ for distro_name, distro_config in distros.items():
                 ]
             }
 
+        config_self['workflows'][f"build-deploy-{dist}"] = {
+            'jobs': [
+                {
+                    'build': {
+                        'name': distro_build_job_name,
+                        'dist': dist,
+                        # required since `deploy` has tag filters AND requires `build`
+                        'filters': {
+                            'tags': {
+                                'only': '/.*/'
+                            }
+                        }
+                    }
+                },
+                {
+                    'deploy': {
+                        'name': distro_deploy_job_name,
+                        'dist': dist,
+                        'context': 'org-global',
+                        'requires': [
+                            distro_build_job_name
+                        ],
+                        'filters': {
+                            'tags': {
+                                'only': '/^v.*/'
+                            },
+                            'branches': {
+                                'ignore': '/.*/'
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+
 # copy this raw yml to preserve formatting
 shutil.copy('partial_config.yml', 'generated_config.yml')
 with open('generated_config.yml', 'a') as f:
@@ -119,3 +161,7 @@ with open('generated_config.yml', 'a') as f:
 shutil.copy('partial_config_nginx.yml', 'generated_config_nginx.yml')
 with open('generated_config_nginx.yml', 'a') as f:
     yaml.dump(config_nginx, f, default_flow_style=None)
+
+shutil.copy('partial_config_self.yml', 'generated_config_self.yml')
+with open('generated_config_self.yml', 'a') as f:
+    yaml.dump(config_self, f, default_flow_style=None)
