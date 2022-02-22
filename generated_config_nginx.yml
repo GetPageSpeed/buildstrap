@@ -105,21 +105,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-amzn2-mainline
         requires: [build-amzn2-mainline]
-  build-deploy-amzn2-plesk:
-    jobs:
-    - build:
-        dist: amzn2
-        filters:
-          branches: {only: plesk}
-        name: build-amzn2-plesk
-        plesk: 18
-    - deploy:
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: plesk}
-        name: deploy-amzn2-plesk
-        requires: [build-amzn2-plesk]
   build-deploy-amzn2-stable:
     jobs:
     - build:
@@ -240,21 +225,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-fc34-mainline
         requires: [build-fc34-mainline]
-  build-deploy-fc34-plesk:
-    jobs:
-    - build:
-        dist: fc34
-        filters:
-          branches: {only: plesk}
-        name: build-fc34-plesk
-        plesk: 18
-    - deploy:
-        context: org-global
-        dist: fc34
-        filters:
-          branches: {only: plesk}
-        name: deploy-fc34-plesk
-        requires: [build-fc34-plesk]
   build-deploy-fc34-stable:
     jobs:
     - build:
@@ -285,21 +255,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-fc35-mainline
         requires: [build-fc35-mainline]
-  build-deploy-fc35-plesk:
-    jobs:
-    - build:
-        dist: fc35
-        filters:
-          branches: {only: plesk}
-        name: build-fc35-plesk
-        plesk: 18
-    - deploy:
-        context: org-global
-        dist: fc35
-        filters:
-          branches: {only: plesk}
-        name: deploy-fc35-plesk
-        requires: [build-fc35-plesk]
   build-deploy-fc35-stable:
     jobs:
     - build:

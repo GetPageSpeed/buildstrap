@@ -84,6 +84,9 @@ for distro_name, distro_config in distros.items():
         }
 
         for nginx_branch, git_branch in nginx_branches.items():
+            if git_branch == 'plesk':
+                if 'has_plesk' not in distro_config or not distro_config['has_plesk']:
+                    continue
             config_nginx['workflows'][f"build-deploy-{dist}-{nginx_branch}"] = {
                 'jobs': [
                     {

@@ -3,6 +3,7 @@
 distros:
   rhel:
     dist: el
+    has_plesk: True
   fedora:
     dist: fc
   amazonlinux:
