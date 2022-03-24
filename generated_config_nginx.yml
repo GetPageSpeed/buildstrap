@@ -210,6 +210,51 @@ workflows:
           branches: {only: master}
         name: deploy-el8-stable
         requires: [build-el8-stable]
+  build-deploy-el9-mainline:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: mainline}
+        name: build-el9-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: mainline}
+        name: deploy-el9-mainline
+        requires: [build-el9-mainline]
+  build-deploy-el9-plesk:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: plesk}
+        name: build-el9-plesk
+        plesk: 18
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: plesk}
+        name: deploy-el9-plesk
+        requires: [build-el9-plesk]
+  build-deploy-el9-stable:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: master}
+        name: build-el9-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: master}
+        name: deploy-el9-stable
+        requires: [build-el9-stable]
   build-deploy-fc34-mainline:
     jobs:
     - build:
@@ -270,3 +315,63 @@ workflows:
           branches: {only: master}
         name: deploy-fc35-stable
         requires: [build-fc35-stable]
+  build-deploy-sles14-mainline:
+    jobs:
+    - build:
+        dist: sles14
+        filters:
+          branches: {only: mainline}
+        name: build-sles14-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: sles14
+        filters:
+          branches: {only: mainline}
+        name: deploy-sles14-mainline
+        requires: [build-sles14-mainline]
+  build-deploy-sles14-stable:
+    jobs:
+    - build:
+        dist: sles14
+        filters:
+          branches: {only: master}
+        name: build-sles14-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: sles14
+        filters:
+          branches: {only: master}
+        name: deploy-sles14-stable
+        requires: [build-sles14-stable]
+  build-deploy-sles15-mainline:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: mainline}
+        name: build-sles15-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: mainline}
+        name: deploy-sles15-mainline
+        requires: [build-sles15-mainline]
+  build-deploy-sles15-stable:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: master}
+        name: build-sles15-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: master}
+        name: deploy-sles15-stable
+        requires: [build-sles15-stable]

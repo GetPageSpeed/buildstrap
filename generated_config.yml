@@ -97,6 +97,14 @@ workflows:
         dist: el8
         name: deploy-el8
         requires: [build-el8]
+  build-deploy-el9:
+    jobs:
+    - build: {dist: el9, name: build-el9}
+    - deploy:
+        context: org-global
+        dist: el9
+        name: deploy-el9
+        requires: [build-el9]
   build-deploy-fc34:
     jobs:
     - build: {dist: fc34, name: build-fc34}
@@ -113,3 +121,19 @@ workflows:
         dist: fc35
         name: deploy-fc35
         requires: [build-fc35]
+  build-deploy-sles14:
+    jobs:
+    - build: {dist: sles14, name: build-sles14}
+    - deploy:
+        context: org-global
+        dist: sles14
+        name: deploy-sles14
+        requires: [build-sles14]
+  build-deploy-sles15:
+    jobs:
+    - build: {dist: sles15, name: build-sles15}
+    - deploy:
+        context: org-global
+        dist: sles15
+        name: deploy-sles15
+        requires: [build-sles15]
