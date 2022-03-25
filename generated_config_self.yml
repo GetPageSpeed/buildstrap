@@ -163,21 +163,6 @@ workflows:
           tags: {only: /^v.*/}
         name: deploy-fc35
         requires: [build-fc35]
-  build-deploy-sles14:
-    jobs:
-    - build:
-        dist: sles14
-        filters:
-          tags: {only: /.*/}
-        name: build-sles14
-    - deploy:
-        context: org-global
-        dist: sles14
-        filters:
-          branches: {ignore: /.*/}
-          tags: {only: /^v.*/}
-        name: deploy-sles14
-        requires: [build-sles14]
   build-deploy-sles15:
     jobs:
     - build:

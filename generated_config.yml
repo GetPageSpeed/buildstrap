@@ -121,14 +121,6 @@ workflows:
         dist: fc35
         name: deploy-fc35
         requires: [build-fc35]
-  build-deploy-sles14:
-    jobs:
-    - build: {dist: sles14, name: build-sles14}
-    - deploy:
-        context: org-global
-        dist: sles14
-        name: deploy-sles14
-        requires: [build-sles14]
   build-deploy-sles15:
     jobs:
     - build: {dist: sles15, name: build-sles15}

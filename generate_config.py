@@ -22,10 +22,18 @@ for distro, distro_config in distros.items():
         continue
     distro_version = lastversion.latest(distro).release[0]
     # print(f"{distro}'s latest major version is {distro_version}")
+    # array of OS releases, of course we build against the current version always:
     distros[distro]['versions'] = [
-        distro_version - 1,
         distro_version
     ]
+    # build against that many past releases of OS
+    os_versions = 2
+    if 'os_versions' in distro_config:
+        os_versions = int(distro_config['os_versions'])
+    # now add past release of the OS:
+    for i in range(1, os_versions):
+        distros[distro]['versions'].append(distro_version - i)
+
 
 # which virtual NGINX branch builds on which git branch
 nginx_branches = {

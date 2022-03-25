@@ -315,36 +315,6 @@ workflows:
           branches: {only: master}
         name: deploy-fc35-stable
         requires: [build-fc35-stable]
-  build-deploy-sles14-mainline:
-    jobs:
-    - build:
-        dist: sles14
-        filters:
-          branches: {only: mainline}
-        name: build-sles14-mainline
-        plesk: 0
-    - deploy:
-        context: org-global
-        dist: sles14
-        filters:
-          branches: {only: mainline}
-        name: deploy-sles14-mainline
-        requires: [build-sles14-mainline]
-  build-deploy-sles14-stable:
-    jobs:
-    - build:
-        dist: sles14
-        filters:
-          branches: {only: master}
-        name: build-sles14-stable
-        plesk: 0
-    - deploy:
-        context: org-global
-        dist: sles14
-        filters:
-          branches: {only: master}
-        name: deploy-sles14-stable
-        requires: [build-sles14-stable]
   build-deploy-sles15-mainline:
     jobs:
     - build:

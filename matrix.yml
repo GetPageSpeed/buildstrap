@@ -23,3 +23,4 @@ distros:
   sles:
     dist: sles
     description: "SUSE Linux Enterprise"
+    os_versions: 1
