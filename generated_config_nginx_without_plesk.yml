@@ -1,0 +1,302 @@
+version: 2.1
+
+executors:
+  deploy:
+    parameters:
+      dist:
+        type: string
+    docker:
+      - image: kroniak/ssh-client
+    working_directory: /output
+    environment:
+      DISTRO: << parameters.dist >>
+  rpmbuilder:
+    parameters:
+      dist:
+        type: string
+      rpmlint:
+        type: integer
+        default: 1
+      plesk:
+        type: integer
+        default: 0
+    docker:
+      - image: getpagespeed/rpmbuilder:<< parameters.dist >>
+    working_directory: /sources
+    environment:
+      RPMLINT: << parameters.rpmlint >>
+      PLESK: << parameters.plesk >>
+jobs:
+  build:
+    parameters:
+      dist:
+        description: "The dist tag of OS to build for"
+        type: string
+      plesk:
+        description: "Plesk major release version number, e.g. 18"
+        type: integer
+        default: 0
+    resource_class: small
+    executor:
+      name: rpmbuilder
+      dist: << parameters.dist >>
+      plesk: << parameters.plesk >>
+    steps:
+      - checkout
+      - run:
+          name: "Set up RPM macro reflecting the NGINX branch"
+          command: |
+            echo "%nginx_branch ${CIRCLE_BRANCH}" >> rpmmacros
+      - run:
+          name: "Set up %plesk macro if passed by a job"
+          command: |
+            [ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
+      - run:
+          name: "Run the build itself: this will do rpmlint and check RPMs existence among other things."
+          command: build
+      - persist_to_workspace:
+          root: /output
+          paths:
+            - "*.rpm"
+  deploy:
+    parameters:
+      dist:
+        description: "The dist tag of OS to deploy for"
+        type: string
+    executor:
+      name: deploy
+      dist: << parameters.dist >>
+    steps:
+      - attach_workspace:
+          at: /output
+      - add_ssh_keys:
+          fingerprints:
+            - "8c:a4:dd:2c:47:4c:63:aa:90:0b:e0:d6:15:be:87:82"
+      - run:
+          name: "Ensure project specific upload directory to avoid deploy collisions"
+          command: >
+            ssh -o StrictHostKeyChecking=no
+            $GPS_BUILD_USER@$GPS_BUILD_SERVER
+            "mkdir -p ~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}"
+      - run:
+          name: "Deploy all RPMs to GetPageSpeed repo."
+          command: >
+            scp -o StrictHostKeyChecking=no -q -r *.rpm
+            $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/
+      - run:
+          name: "Trigger Deploy Hook."
+          command: >
+            ssh -o StrictHostKeyChecking=no -q
+            $GPS_BUILD_USER@$GPS_BUILD_SERVER
+            "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}/process.log 2>&1&"
+workflows:
+  build-deploy-amzn2-mainline:
+    jobs:
+    - build:
+        dist: amzn2
+        filters:
+          branches: {only: mainline}
+        name: build-amzn2-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: mainline}
+        name: deploy-amzn2-mainline
+        requires: [build-amzn2-mainline]
+  build-deploy-amzn2-stable:
+    jobs:
+    - build:
+        dist: amzn2
+        filters:
+          branches: {only: master}
+        name: build-amzn2-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: master}
+        name: deploy-amzn2-stable
+        requires: [build-amzn2-stable]
+  build-deploy-el7-mainline:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: mainline}
+        name: build-el7-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: mainline}
+        name: deploy-el7-mainline
+        requires: [build-el7-mainline]
+  build-deploy-el7-stable:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: master}
+        name: build-el7-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: master}
+        name: deploy-el7-stable
+        requires: [build-el7-stable]
+  build-deploy-el8-mainline:
+    jobs:
+    - build:
+        dist: el8
+        filters:
+          branches: {only: mainline}
+        name: build-el8-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: mainline}
+        name: deploy-el8-mainline
+        requires: [build-el8-mainline]
+  build-deploy-el8-stable:
+    jobs:
+    - build:
+        dist: el8
+        filters:
+          branches: {only: master}
+        name: build-el8-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: master}
+        name: deploy-el8-stable
+        requires: [build-el8-stable]
+  build-deploy-el9-mainline:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: mainline}
+        name: build-el9-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: mainline}
+        name: deploy-el9-mainline
+        requires: [build-el9-mainline]
+  build-deploy-el9-stable:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: master}
+        name: build-el9-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: master}
+        name: deploy-el9-stable
+        requires: [build-el9-stable]
+  build-deploy-fc34-mainline:
+    jobs:
+    - build:
+        dist: fc34
+        filters:
+          branches: {only: mainline}
+        name: build-fc34-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: fc34
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc34-mainline
+        requires: [build-fc34-mainline]
+  build-deploy-fc34-stable:
+    jobs:
+    - build:
+        dist: fc34
+        filters:
+          branches: {only: master}
+        name: build-fc34-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: fc34
+        filters:
+          branches: {only: master}
+        name: deploy-fc34-stable
+        requires: [build-fc34-stable]
+  build-deploy-fc35-mainline:
+    jobs:
+    - build:
+        dist: fc35
+        filters:
+          branches: {only: mainline}
+        name: build-fc35-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: fc35
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc35-mainline
+        requires: [build-fc35-mainline]
+  build-deploy-fc35-stable:
+    jobs:
+    - build:
+        dist: fc35
+        filters:
+          branches: {only: master}
+        name: build-fc35-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: fc35
+        filters:
+          branches: {only: master}
+        name: deploy-fc35-stable
+        requires: [build-fc35-stable]
+  build-deploy-sles15-mainline:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: mainline}
+        name: build-sles15-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: mainline}
+        name: deploy-sles15-mainline
+        requires: [build-sles15-mainline]
+  build-deploy-sles15-stable:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: master}
+        name: build-sles15-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: master}
+        name: deploy-sles15-stable
+        requires: [build-sles15-stable]

@@ -52,6 +52,11 @@ config_nginx = {
     'workflows': {}
 }
 
+# for nginx module RPM spec repo that is already built by Plesk itself
+config_nginx_without_plesk = {
+    'workflows': {}
+}
+
 # for software source repo with the RPM spec file, e.g. fds
 config_self = {
     'workflows': {}
@@ -128,6 +133,40 @@ for distro_name, distro_config in distros.items():
                 ]
             }
 
+            if git_branch != 'plesk':
+                config_nginx_without_plesk['workflows'][f"build-deploy-{dist}-{nginx_branch}"] = {
+                    'jobs': [
+                        {
+                            'build': {
+                                'name': f"{distro_build_job_name}-{nginx_branch}",
+                                'dist': dist,
+                                'plesk': 0,
+                                'filters': {
+                                    'branches': {
+                                        'only': git_branch
+                                    }
+                                }
+                            },
+
+                        },
+                        {
+                            'deploy': {
+                                'name': f"{distro_deploy_job_name}-{nginx_branch}",
+                                'dist': dist,
+                                'context': 'org-global',
+                                'requires': [
+                                    f"{distro_build_job_name}-{nginx_branch}",
+                                ],
+                                'filters': {
+                                    'branches': {
+                                        'only': git_branch
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+
         config_self['workflows'][f"build-deploy-{dist}"] = {
             'jobs': [
                 {
@@ -172,6 +211,11 @@ with open('generated_config.yml', 'a') as f:
 shutil.copy('partial_config_nginx.yml', 'generated_config_nginx.yml')
 with open('generated_config_nginx.yml', 'a') as f:
     yaml.dump(config_nginx, f, default_flow_style=None)
+
+# the same for branch-based NGINX builds where Plesk already ships its own module
+shutil.copy('partial_config_nginx.yml', 'generated_config_nginx_without_plesk.yml')
+with open('generated_config_nginx_without_plesk.yml', 'a') as f:
+    yaml.dump(config_nginx_without_plesk, f, default_flow_style=None)
 
 shutil.copy('partial_config_self.yml', 'generated_config_self.yml')
 with open('generated_config_self.yml', 'a') as f:
