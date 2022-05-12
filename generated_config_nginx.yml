@@ -255,36 +255,6 @@ workflows:
           branches: {only: master}
         name: deploy-el9-stable
         requires: [build-el9-stable]
-  build-deploy-fc34-mainline:
-    jobs:
-    - build:
-        dist: fc34
-        filters:
-          branches: {only: mainline}
-        name: build-fc34-mainline
-        plesk: 0
-    - deploy:
-        context: org-global
-        dist: fc34
-        filters:
-          branches: {only: mainline}
-        name: deploy-fc34-mainline
-        requires: [build-fc34-mainline]
-  build-deploy-fc34-stable:
-    jobs:
-    - build:
-        dist: fc34
-        filters:
-          branches: {only: master}
-        name: build-fc34-stable
-        plesk: 0
-    - deploy:
-        context: org-global
-        dist: fc34
-        filters:
-          branches: {only: master}
-        name: deploy-fc34-stable
-        requires: [build-fc34-stable]
   build-deploy-fc35-mainline:
     jobs:
     - build:
@@ -315,6 +285,36 @@ workflows:
           branches: {only: master}
         name: deploy-fc35-stable
         requires: [build-fc35-stable]
+  build-deploy-fc36-mainline:
+    jobs:
+    - build:
+        dist: fc36
+        filters:
+          branches: {only: mainline}
+        name: build-fc36-mainline
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: fc36
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc36-mainline
+        requires: [build-fc36-mainline]
+  build-deploy-fc36-stable:
+    jobs:
+    - build:
+        dist: fc36
+        filters:
+          branches: {only: master}
+        name: build-fc36-stable
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: fc36
+        filters:
+          branches: {only: master}
+        name: deploy-fc36-stable
+        requires: [build-fc36-stable]
   build-deploy-sles15-mainline:
     jobs:
     - build:
