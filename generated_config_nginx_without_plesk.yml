@@ -52,7 +52,7 @@ jobs:
           command: |
             [ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
             # we generate both nginx-module-<foo> and sw-nginx-module-<foo> from a single spec file, so:
-            [ -z ${PLESK+x} ] || echo "\naddFilter (\"E: invalid-spec-name\")" >> rpmlint.config
+            [ -z ${PLESK+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
       - run:
           name: "Run script to cleanup spec files that don't need rebuilding"
           command: |
