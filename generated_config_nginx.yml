@@ -51,6 +51,11 @@ jobs:
           name: "Set up %plesk macro if passed by a job"
           command: |
             [ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
+            # we generate both nginx-module-<foo> and sw-nginx-module-<foo> from a single spec file, so:
+            [ -z ${PLESK+x} ] || echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config
+    - run:
+        name: "Run script to cleanup spec files that don't need rebuilding"
+        command: test -f ./cleanup.sh && ./cleanup.sh
       - run:
           name: "Run the build itself: this will do rpmlint and check RPMs existence among other things."
           command: build
