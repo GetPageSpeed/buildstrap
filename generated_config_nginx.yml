@@ -56,7 +56,7 @@ jobs:
       - run:
           name: "Run script to cleanup spec files that don't need rebuilding"
           command: |
-            [[ ! -f ./cleanup.sh ]] || ./cleanup.sh
+            [[ ! -f ./cleanup.sh ]] || BRANCH="${CIRCLE_BRANCH}" ./cleanup.sh
       - run:
           name: "Run the build itself: this will do rpmlint and check RPMs existence among other things."
           command: build
