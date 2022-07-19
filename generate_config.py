@@ -148,6 +148,7 @@ for distro_name, distro_config in distros.items():
                                 'name': f"{distro_build_job_name}-{nginx_branch}",
                                 'dist': dist,
                                 'plesk': 0,
+                                'mod': 1 if nginx_branch == 'nginx-mod' else 0,
                                 'filters': {
                                     'branches': {
                                         'only': git_branch

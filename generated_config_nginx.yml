@@ -40,6 +40,9 @@ jobs:
         description: "Plesk major release version number, e.g. 18"
         type: integer
         default: 0
+      mod:
+        type: integer
+        default: 0        
     resource_class: small
     executor:
       name: rpmbuilder

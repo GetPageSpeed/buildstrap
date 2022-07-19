@@ -40,6 +40,9 @@ jobs:
         description: "Plesk major release version number, e.g. 18"
         type: integer
         default: 0
+      mod:
+        type: integer
+        default: 0        
     resource_class: small
     executor:
       name: rpmbuilder
@@ -111,6 +114,7 @@ workflows:
         dist: amzn2
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-amzn2-mainline
         plesk: 0
     - deploy:
@@ -126,6 +130,7 @@ workflows:
         dist: amzn2
         filters:
           branches: {only: master}
+        mod: 0
         name: build-amzn2-stable
         plesk: 0
     - deploy:
@@ -141,6 +146,7 @@ workflows:
         dist: el7
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-el7-mainline
         plesk: 0
     - deploy:
@@ -156,6 +162,7 @@ workflows:
         dist: el7
         filters:
           branches: {only: nginx-mod}
+        mod: 1
         name: build-el7-nginx-mod
         plesk: 0
     - deploy:
@@ -171,6 +178,7 @@ workflows:
         dist: el7
         filters:
           branches: {only: master}
+        mod: 0
         name: build-el7-stable
         plesk: 0
     - deploy:
@@ -186,6 +194,7 @@ workflows:
         dist: el8
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-el8-mainline
         plesk: 0
     - deploy:
@@ -201,6 +210,7 @@ workflows:
         dist: el8
         filters:
           branches: {only: master}
+        mod: 0
         name: build-el8-stable
         plesk: 0
     - deploy:
@@ -216,6 +226,7 @@ workflows:
         dist: el9
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-el9-mainline
         plesk: 0
     - deploy:
@@ -231,6 +242,7 @@ workflows:
         dist: el9
         filters:
           branches: {only: master}
+        mod: 0
         name: build-el9-stable
         plesk: 0
     - deploy:
@@ -246,6 +258,7 @@ workflows:
         dist: fc35
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-fc35-mainline
         plesk: 0
     - deploy:
@@ -261,6 +274,7 @@ workflows:
         dist: fc35
         filters:
           branches: {only: master}
+        mod: 0
         name: build-fc35-stable
         plesk: 0
     - deploy:
@@ -276,6 +290,7 @@ workflows:
         dist: fc36
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-fc36-mainline
         plesk: 0
     - deploy:
@@ -291,6 +306,7 @@ workflows:
         dist: fc36
         filters:
           branches: {only: master}
+        mod: 0
         name: build-fc36-stable
         plesk: 0
     - deploy:
@@ -306,6 +322,7 @@ workflows:
         dist: sles15
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-sles15-mainline
         plesk: 0
     - deploy:
@@ -321,6 +338,7 @@ workflows:
         dist: sles15
         filters:
           branches: {only: master}
+        mod: 0
         name: build-sles15-stable
         plesk: 0
     - deploy:
