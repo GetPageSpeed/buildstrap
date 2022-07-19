@@ -72,6 +72,8 @@ jobs:
           paths:
             - "*.rpm"
   deploy:
+    # one deploy at a time
+    parallelism: 1
     parameters:
       dist:
         description: "The dist tag of OS to deploy for"
