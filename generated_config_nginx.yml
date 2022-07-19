@@ -20,12 +20,16 @@ executors:
       plesk:
         type: integer
         default: 0
+      mod:
+        type: integer
+        default: 0
     docker:
       - image: getpagespeed/rpmbuilder:<< parameters.dist >>
     working_directory: /sources
     environment:
       RPMLINT: << parameters.rpmlint >>
       PLESK: << parameters.plesk >>
+      MOD: << parameters.mod >>
 jobs:
   build:
     parameters:
@@ -41,6 +45,7 @@ jobs:
       name: rpmbuilder
       dist: << parameters.dist >>
       plesk: << parameters.plesk >>
+      mod: << parameters.mod >>
     steps:
       - checkout
       - run:
@@ -53,6 +58,8 @@ jobs:
             [ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
             # we generate both nginx-module-<foo> and sw-nginx-module-<foo> from a single spec file, so:
             [ -z ${PLESK+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
+            [ -z ${MOD+x} ] || echo "%_nginx_mod ${MOD}" >> rpmmacros
+            [ -z ${MOD+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
       - run:
           name: "Run script to cleanup spec files that don't need rebuilding"
           command: |
@@ -102,6 +109,7 @@ workflows:
         dist: amzn2
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-amzn2-mainline
         plesk: 0
     - deploy:
@@ -117,6 +125,7 @@ workflows:
         dist: amzn2
         filters:
           branches: {only: master}
+        mod: 0
         name: build-amzn2-stable
         plesk: 0
     - deploy:
@@ -132,6 +141,7 @@ workflows:
         dist: el7
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-el7-mainline
         plesk: 0
     - deploy:
@@ -141,12 +151,29 @@ workflows:
           branches: {only: mainline}
         name: deploy-el7-mainline
         requires: [build-el7-mainline]
+  build-deploy-el7-nginx-mod:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: nginx-mod}
+        mod: 1
+        name: build-el7-nginx-mod
+        plesk: 0
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: nginx-mod}
+        name: deploy-el7-nginx-mod
+        requires: [build-el7-nginx-mod]
   build-deploy-el7-plesk:
     jobs:
     - build:
         dist: el7
         filters:
           branches: {only: plesk}
+        mod: 0
         name: build-el7-plesk
         plesk: 18
     - deploy:
@@ -162,6 +189,7 @@ workflows:
         dist: el7
         filters:
           branches: {only: master}
+        mod: 0
         name: build-el7-stable
         plesk: 0
     - deploy:
@@ -177,6 +205,7 @@ workflows:
         dist: el8
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-el8-mainline
         plesk: 0
     - deploy:
@@ -192,6 +221,7 @@ workflows:
         dist: el8
         filters:
           branches: {only: plesk}
+        mod: 0
         name: build-el8-plesk
         plesk: 18
     - deploy:
@@ -207,6 +237,7 @@ workflows:
         dist: el8
         filters:
           branches: {only: master}
+        mod: 0
         name: build-el8-stable
         plesk: 0
     - deploy:
@@ -222,6 +253,7 @@ workflows:
         dist: el9
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-el9-mainline
         plesk: 0
     - deploy:
@@ -237,6 +269,7 @@ workflows:
         dist: el9
         filters:
           branches: {only: plesk}
+        mod: 0
         name: build-el9-plesk
         plesk: 18
     - deploy:
@@ -252,6 +285,7 @@ workflows:
         dist: el9
         filters:
           branches: {only: master}
+        mod: 0
         name: build-el9-stable
         plesk: 0
     - deploy:
@@ -267,6 +301,7 @@ workflows:
         dist: fc35
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-fc35-mainline
         plesk: 0
     - deploy:
@@ -282,6 +317,7 @@ workflows:
         dist: fc35
         filters:
           branches: {only: master}
+        mod: 0
         name: build-fc35-stable
         plesk: 0
     - deploy:
@@ -297,6 +333,7 @@ workflows:
         dist: fc36
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-fc36-mainline
         plesk: 0
     - deploy:
@@ -312,6 +349,7 @@ workflows:
         dist: fc36
         filters:
           branches: {only: master}
+        mod: 0
         name: build-fc36-stable
         plesk: 0
     - deploy:
@@ -327,6 +365,7 @@ workflows:
         dist: sles15
         filters:
           branches: {only: mainline}
+        mod: 0
         name: build-sles15-mainline
         plesk: 0
     - deploy:
@@ -342,6 +381,7 @@ workflows:
         dist: sles15
         filters:
           branches: {only: master}
+        mod: 0
         name: build-sles15-stable
         plesk: 0
     - deploy:

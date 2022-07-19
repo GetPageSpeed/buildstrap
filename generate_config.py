@@ -39,7 +39,11 @@ for distro, distro_config in distros.items():
 nginx_branches = {
     'stable': 'master',
     'mainline': 'mainline',
-    'plesk': 'plesk'
+    'plesk': 'plesk',
+    # spec is always equal to stable (with mod conditionals), but we only push those modules which need unique version
+    # due to SSL requirements, etc.
+    # nginx-mod for modules only needed for e.g. EL7 where we built against non-system OpenSSL, but not in EL8, etc.
+    'nginx-mod': 'nginx-mod'
 }
 
 # for standard RPM spec repo
@@ -100,6 +104,8 @@ for distro_name, distro_config in distros.items():
             if git_branch == 'plesk':
                 if 'has_plesk' not in distro_config or not distro_config['has_plesk']:
                     continue
+            if git_branch == 'nginx-mod' and dist != 'el7':
+                continue
             config_nginx['workflows'][f"build-deploy-{dist}-{nginx_branch}"] = {
                 'jobs': [
                     {
@@ -107,6 +113,7 @@ for distro_name, distro_config in distros.items():
                             'name': f"{distro_build_job_name}-{nginx_branch}",
                             'dist': dist,
                             'plesk': 18 if nginx_branch == 'plesk' else 0,
+                            'mod': 1 if nginx_branch == 'nginx-mod' else 0,
                             'filters': {
                                 'branches': {
                                     'only': git_branch

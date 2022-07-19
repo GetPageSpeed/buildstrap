@@ -20,12 +20,16 @@ executors:
       plesk:
         type: integer
         default: 0
+      mod:
+        type: integer
+        default: 0
     docker:
       - image: getpagespeed/rpmbuilder:<< parameters.dist >>
     working_directory: /sources
     environment:
       RPMLINT: << parameters.rpmlint >>
       PLESK: << parameters.plesk >>
+      MOD: << parameters.mod >>
 jobs:
   build:
     parameters:
@@ -41,6 +45,7 @@ jobs:
       name: rpmbuilder
       dist: << parameters.dist >>
       plesk: << parameters.plesk >>
+      mod: << parameters.mod >>
     steps:
       - checkout
       - run:
@@ -53,6 +58,8 @@ jobs:
             [ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
             # we generate both nginx-module-<foo> and sw-nginx-module-<foo> from a single spec file, so:
             [ -z ${PLESK+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
+            [ -z ${MOD+x} ] || echo "%_nginx_mod ${MOD}" >> rpmmacros
+            [ -z ${MOD+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
       - run:
           name: "Run script to cleanup spec files that don't need rebuilding"
           command: |
