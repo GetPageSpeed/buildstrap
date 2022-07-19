@@ -42,7 +42,7 @@ jobs:
         default: 0
       mod:
         type: integer
-        default: 0        
+        default: 0
     resource_class: small
     executor:
       name: rpmbuilder
@@ -114,9 +114,7 @@ workflows:
         dist: amzn2
         filters:
           branches: {only: mainline}
-        mod: 0
         name: build-amzn2-mainline
-        plesk: 0
     - deploy:
         context: org-global
         dist: amzn2
@@ -130,9 +128,7 @@ workflows:
         dist: amzn2
         filters:
           branches: {only: master}
-        mod: 0
         name: build-amzn2-stable
-        plesk: 0
     - deploy:
         context: org-global
         dist: amzn2
@@ -146,9 +142,7 @@ workflows:
         dist: el7
         filters:
           branches: {only: mainline}
-        mod: 0
         name: build-el7-mainline
-        plesk: 0
     - deploy:
         context: org-global
         dist: el7
@@ -164,7 +158,6 @@ workflows:
           branches: {only: nginx-mod}
         mod: 1
         name: build-el7-nginx-mod
-        plesk: 0
     - deploy:
         context: org-global
         dist: el7
@@ -178,7 +171,6 @@ workflows:
         dist: el7
         filters:
           branches: {only: plesk}
-        mod: 0
         name: build-el7-plesk
         plesk: 18
     - deploy:
@@ -194,9 +186,7 @@ workflows:
         dist: el7
         filters:
           branches: {only: master}
-        mod: 0
         name: build-el7-stable
-        plesk: 0
     - deploy:
         context: org-global
         dist: el7
@@ -210,9 +200,7 @@ workflows:
         dist: el8
         filters:
           branches: {only: mainline}
-        mod: 0
         name: build-el8-mainline
-        plesk: 0
     - deploy:
         context: org-global
         dist: el8
@@ -226,7 +214,6 @@ workflows:
         dist: el8
         filters:
           branches: {only: plesk}
-        mod: 0
         name: build-el8-plesk
         plesk: 18
     - deploy:
@@ -242,9 +229,7 @@ workflows:
         dist: el8
         filters:
           branches: {only: master}
-        mod: 0
         name: build-el8-stable
-        plesk: 0
     - deploy:
         context: org-global
         dist: el8
@@ -258,9 +243,7 @@ workflows:
         dist: el9
         filters:
           branches: {only: mainline}
-        mod: 0
         name: build-el9-mainline
-        plesk: 0
     - deploy:
         context: org-global
         dist: el9
@@ -274,7 +257,6 @@ workflows:
         dist: el9
         filters:
           branches: {only: plesk}
-        mod: 0
         name: build-el9-plesk
         plesk: 18
     - deploy:
@@ -290,9 +272,7 @@ workflows:
         dist: el9
         filters:
           branches: {only: master}
-        mod: 0
         name: build-el9-stable
-        plesk: 0
     - deploy:
         context: org-global
         dist: el9
@@ -306,9 +286,7 @@ workflows:
         dist: fc35
         filters:
           branches: {only: mainline}
-        mod: 0
         name: build-fc35-mainline
-        plesk: 0
     - deploy:
         context: org-global
         dist: fc35
@@ -322,9 +300,7 @@ workflows:
         dist: fc35
         filters:
           branches: {only: master}
-        mod: 0
         name: build-fc35-stable
-        plesk: 0
     - deploy:
         context: org-global
         dist: fc35
@@ -338,9 +314,7 @@ workflows:
         dist: fc36
         filters:
           branches: {only: mainline}
-        mod: 0
         name: build-fc36-mainline
-        plesk: 0
     - deploy:
         context: org-global
         dist: fc36
@@ -354,9 +328,7 @@ workflows:
         dist: fc36
         filters:
           branches: {only: master}
-        mod: 0
         name: build-fc36-stable
-        plesk: 0
     - deploy:
         context: org-global
         dist: fc36
@@ -370,9 +342,7 @@ workflows:
         dist: sles15
         filters:
           branches: {only: mainline}
-        mod: 0
         name: build-sles15-mainline
-        plesk: 0
     - deploy:
         context: org-global
         dist: sles15
@@ -386,9 +356,7 @@ workflows:
         dist: sles15
         filters:
           branches: {only: master}
-        mod: 0
         name: build-sles15-stable
-        plesk: 0
     - deploy:
         context: org-global
         dist: sles15

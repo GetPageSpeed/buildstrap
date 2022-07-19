@@ -106,14 +106,13 @@ for distro_name, distro_config in distros.items():
                     continue
             if git_branch == 'nginx-mod' and dist != 'el7':
                 continue
-            config_nginx['workflows'][f"build-deploy-{dist}-{nginx_branch}"] = {
+            workflow_name = f"build-deploy-{dist}-{nginx_branch}"
+            workflow = {
                 'jobs': [
                     {
                         'build': {
                             'name': f"{distro_build_job_name}-{nginx_branch}",
                             'dist': dist,
-                            'plesk': 18 if nginx_branch == 'plesk' else 0,
-                            'mod': 1 if nginx_branch == 'nginx-mod' else 0,
                             'filters': {
                                 'branches': {
                                     'only': git_branch
@@ -140,40 +139,15 @@ for distro_name, distro_config in distros.items():
                 ]
             }
 
-            if git_branch != 'plesk':
-                config_nginx_without_plesk['workflows'][f"build-deploy-{dist}-{nginx_branch}"] = {
-                    'jobs': [
-                        {
-                            'build': {
-                                'name': f"{distro_build_job_name}-{nginx_branch}",
-                                'dist': dist,
-                                'plesk': 0,
-                                'mod': 1 if nginx_branch == 'nginx-mod' else 0,
-                                'filters': {
-                                    'branches': {
-                                        'only': git_branch
-                                    }
-                                }
-                            },
+            config_nginx['workflows'][workflow_name] = workflow
 
-                        },
-                        {
-                            'deploy': {
-                                'name': f"{distro_deploy_job_name}-{nginx_branch}",
-                                'dist': dist,
-                                'context': 'org-global',
-                                'requires': [
-                                    f"{distro_build_job_name}-{nginx_branch}",
-                                ],
-                                'filters': {
-                                    'branches': {
-                                        'only': git_branch
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
+            if git_branch == 'nginx-mod':
+                workflow['jobs'][0]['build']['mod'] = 1
+
+            if git_branch == 'plesk':
+                workflow['jobs'][0]['build']['plesk'] = 18
+            else:
+                config_nginx_without_plesk['workflows'][workflow_name] = workflow
 
         config_self['workflows'][f"build-deploy-{dist}"] = {
             'jobs': [
