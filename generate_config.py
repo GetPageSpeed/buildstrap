@@ -43,7 +43,8 @@ nginx_branches = {
     # spec is always equal to stable (with mod conditionals), but we only push those modules which need unique version
     # due to SSL requirements, etc.
     # nginx-mod for modules only needed for e.g. EL7 where we built against non-system OpenSSL, but not in EL8, etc.
-    'nginx-mod': 'nginx-mod'
+    'nginx-mod': 'nginx-mod',
+    'nginx-quic': 'nginx-quic'
 }
 
 # for standard RPM spec repo

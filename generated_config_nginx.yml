@@ -122,6 +122,20 @@ workflows:
           branches: {only: mainline}
         name: deploy-amzn2-mainline
         requires: [build-amzn2-mainline]
+  build-deploy-amzn2-nginx-quic:
+    jobs:
+    - build:
+        dist: amzn2
+        filters:
+          branches: {only: nginx-quic}
+        name: build-amzn2-nginx-quic
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-amzn2-nginx-quic
+        requires: [build-amzn2-nginx-quic]
   build-deploy-amzn2-stable:
     jobs:
     - build:
@@ -165,6 +179,20 @@ workflows:
           branches: {only: nginx-mod}
         name: deploy-el7-nginx-mod
         requires: [build-el7-nginx-mod]
+  build-deploy-el7-nginx-quic:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: nginx-quic}
+        name: build-el7-nginx-quic
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-el7-nginx-quic
+        requires: [build-el7-nginx-quic]
   build-deploy-el7-plesk:
     jobs:
     - build:
@@ -208,6 +236,20 @@ workflows:
           branches: {only: mainline}
         name: deploy-el8-mainline
         requires: [build-el8-mainline]
+  build-deploy-el8-nginx-quic:
+    jobs:
+    - build:
+        dist: el8
+        filters:
+          branches: {only: nginx-quic}
+        name: build-el8-nginx-quic
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-el8-nginx-quic
+        requires: [build-el8-nginx-quic]
   build-deploy-el8-plesk:
     jobs:
     - build:
@@ -251,6 +293,20 @@ workflows:
           branches: {only: mainline}
         name: deploy-el9-mainline
         requires: [build-el9-mainline]
+  build-deploy-el9-nginx-quic:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: nginx-quic}
+        name: build-el9-nginx-quic
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-el9-nginx-quic
+        requires: [build-el9-nginx-quic]
   build-deploy-el9-plesk:
     jobs:
     - build:
@@ -294,6 +350,20 @@ workflows:
           branches: {only: mainline}
         name: deploy-fc35-mainline
         requires: [build-fc35-mainline]
+  build-deploy-fc35-nginx-quic:
+    jobs:
+    - build:
+        dist: fc35
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc35-nginx-quic
+    - deploy:
+        context: org-global
+        dist: fc35
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc35-nginx-quic
+        requires: [build-fc35-nginx-quic]
   build-deploy-fc35-stable:
     jobs:
     - build:
@@ -322,6 +392,20 @@ workflows:
           branches: {only: mainline}
         name: deploy-fc36-mainline
         requires: [build-fc36-mainline]
+  build-deploy-fc36-nginx-quic:
+    jobs:
+    - build:
+        dist: fc36
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc36-nginx-quic
+    - deploy:
+        context: org-global
+        dist: fc36
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc36-nginx-quic
+        requires: [build-fc36-nginx-quic]
   build-deploy-fc36-stable:
     jobs:
     - build:
@@ -350,6 +434,20 @@ workflows:
           branches: {only: mainline}
         name: deploy-sles15-mainline
         requires: [build-sles15-mainline]
+  build-deploy-sles15-nginx-quic:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: nginx-quic}
+        name: build-sles15-nginx-quic
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-sles15-nginx-quic
+        requires: [build-sles15-nginx-quic]
   build-deploy-sles15-stable:
     jobs:
     - build:
