@@ -291,48 +291,6 @@ workflows:
           branches: {only: master}
         name: deploy-el9-stable
         requires: [build-el9-stable]
-  build-deploy-fc35-mainline:
-    jobs:
-    - build:
-        dist: fc35
-        filters:
-          branches: {only: mainline}
-        name: build-fc35-mainline
-    - deploy:
-        context: org-global
-        dist: fc35
-        filters:
-          branches: {only: mainline}
-        name: deploy-fc35-mainline
-        requires: [build-fc35-mainline]
-  build-deploy-fc35-nginx-quic:
-    jobs:
-    - build:
-        dist: fc35
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc35-nginx-quic
-    - deploy:
-        context: org-global
-        dist: fc35
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc35-nginx-quic
-        requires: [build-fc35-nginx-quic]
-  build-deploy-fc35-stable:
-    jobs:
-    - build:
-        dist: fc35
-        filters:
-          branches: {only: master}
-        name: build-fc35-stable
-    - deploy:
-        context: org-global
-        dist: fc35
-        filters:
-          branches: {only: master}
-        name: deploy-fc35-stable
-        requires: [build-fc35-stable]
   build-deploy-fc36-mainline:
     jobs:
     - build:
@@ -375,6 +333,48 @@ workflows:
           branches: {only: master}
         name: deploy-fc36-stable
         requires: [build-fc36-stable]
+  build-deploy-fc37-mainline:
+    jobs:
+    - build:
+        dist: fc37
+        filters:
+          branches: {only: mainline}
+        name: build-fc37-mainline
+    - deploy:
+        context: org-global
+        dist: fc37
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc37-mainline
+        requires: [build-fc37-mainline]
+  build-deploy-fc37-nginx-quic:
+    jobs:
+    - build:
+        dist: fc37
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc37-nginx-quic
+    - deploy:
+        context: org-global
+        dist: fc37
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc37-nginx-quic
+        requires: [build-fc37-nginx-quic]
+  build-deploy-fc37-stable:
+    jobs:
+    - build:
+        dist: fc37
+        filters:
+          branches: {only: master}
+        name: build-fc37-stable
+    - deploy:
+        context: org-global
+        dist: fc37
+        filters:
+          branches: {only: master}
+        name: deploy-fc37-stable
+        requires: [build-fc37-stable]
   build-deploy-sles15-mainline:
     jobs:
     - build:
