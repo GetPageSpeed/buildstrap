@@ -28,7 +28,21 @@ Example of implementation can be found in nginx-module-pagespeed-rpm.
 
 ### Project setup
 
-Copy `config.yml` (single branch project) or `config_nginx.yml` (NGINX module project) into
+```bash
+cd /rpm/project/dir
+mkdir -p .circleci
+curl https://raw.githubusercontent.com/GetPageSpeed/buildstrap/main/config.yml -o .circleci/config.yml
+```
+
+For memory/CPU intensive builds, run this instead:
+
+```bash
+cd /rpm/project/dir
+mkdir -p .circleci
+curl https://raw.githubusercontent.com/GetPageSpeed/buildstrap/main/config_large.yml -o .circleci/config.yml
+```
+
+In other words, copy `config.yml` (single branch project) or `config_nginx.yml` (NGINX module project) into
 `.circleci/config.yml' of a spec project. Use `config_large.yml` for "heavy" binaries which
 likely to exceed RAM on the small default CircleCi resource class.
 
