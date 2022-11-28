@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-# fetch latest release number for each OS and populate "releases" key in matrix.yml
+# fetch the latest release number for each OS and populate "releases" key in matrix.yml
 # with current and previous release numbers (building for last two major)
 import shutil
+import stat
 
 import lastversion
 import yaml
@@ -18,6 +19,8 @@ with open("matrix.yml", 'r') as f:
 
 distros = distros_config['distros']
 for distro, distro_config in distros.items():
+    if 'dir' not in distro_config:
+        distro_config['dir'] = distro_config['dist']
     if 'versions_check' in distro_config and not distro_config['versions_check']:
         continue
     distro_version = lastversion.latest(distro).release[0]
@@ -203,3 +206,53 @@ with open('generated_config_nginx_without_plesk.yml', 'a') as f:
 shutil.copy('partial_config_self.yml', 'generated_config_self.yml')
 with open('generated_config_self.yml', 'a') as f:
     yaml.dump(config_self, f, default_flow_style=None)
+
+# write helper bash arrays for shell scripts
+# declare -A dists=(
+#   ["el6"]="redhat/6"
+#   ["el7"]="redhat/7"
+#   ["el8"]="redhat/8"
+#   ["el9"]="redhat/9"
+#   ["fc33"]="fedora/33"
+#   ["fc34"]="fedora/34"
+#   ["fc35"]="fedora/35"
+#   ["fc36"]="fedora/36"
+#   ["fc37"]="fedora/37"
+#   ["amzn2"]="amzn/2"
+#   ["sles15"]="sles/15"
+# )
+dists_array_s_list = [
+    '#!/bin/bash',
+    '# mapping of dists to directories:',
+    'declare -A dists=('
+]
+for distro_name, distro_config in distros.items():
+    for v in distro_config['versions']:
+        line_fmt = '  ["{}"]="{}"'
+        dists_array_s_list.append(
+            line_fmt.format(
+                f"{distro_config['dist']}{v}",
+                f"{distro_config['dir']}/{v}"
+            )
+        )
+dists_array_s_list.append(')')
+
+dists_array_s_list.append('# mapping of directories to full descriptive names:')
+# declare -A os_long=( ["redhat"]="CentOS/RHEL" ["amzn"]="Amazon Linux" ["fedora"]="Fedora Linux" )
+dists_array_s_list.append('declare -A os_long=(')
+for distro_name, distro_config in distros.items():
+    line_fmt = '  ["{}"]="{}"'
+    dists_array_s_list.append(
+        line_fmt.format(
+            f"{distro_config['dir']}",
+            f"{distro_config['description']}"
+        )
+    )
+dists_array_s_list.append(')')
+dists_array_s_list.append('')
+
+with open('matrix.sh', 'w') as f:
+    f.write("\n".join(dists_array_s_list))
+
+st = os.stat('matrix.sh')
+os.chmod('matrix.sh', st.st_mode | stat.S_IEXEC)

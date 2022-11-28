@@ -3,6 +3,7 @@
 distros:
   rhel:
     dist: el
+    dir: redhat
     description: "CentOS/RHEL"
     has_plesk: True
     # disable versions check and specify versions explicitly because we want to build 9 from stream until rhel 9 is released
@@ -13,6 +14,7 @@ distros:
       - 9
   fedora:
     dist: fc
+    dir: fedora
     description: "Fedora Linux"
   amazonlinux:
     dist: amzn
