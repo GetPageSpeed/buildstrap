@@ -47,7 +47,8 @@ nginx_branches = {
     # due to SSL requirements, etc.
     # nginx-mod for modules only needed for e.g. EL7 where we built against non-system OpenSSL, but not in EL8, etc.
     'nginx-mod': 'nginx-mod',
-    'nginx-quic': 'nginx-quic'
+    'nginx-quic': 'nginx-quic',
+    'angie': 'angie'
 }
 
 # for standard RPM spec repo

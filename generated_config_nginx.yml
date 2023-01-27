@@ -108,6 +108,20 @@ jobs:
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
             "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}/process.log 2>&1&"
 workflows:
+  build-deploy-amzn2-angie:
+    jobs:
+    - build:
+        dist: amzn2
+        filters:
+          branches: {only: angie}
+        name: build-amzn2-angie
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: angie}
+        name: deploy-amzn2-angie
+        requires: [build-amzn2-angie]
   build-deploy-amzn2-mainline:
     jobs:
     - build:
@@ -150,6 +164,20 @@ workflows:
           branches: {only: master}
         name: deploy-amzn2-stable
         requires: [build-amzn2-stable]
+  build-deploy-el7-angie:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: angie}
+        name: build-el7-angie
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: angie}
+        name: deploy-el7-angie
+        requires: [build-el7-angie]
   build-deploy-el7-mainline:
     jobs:
     - build:
@@ -222,6 +250,20 @@ workflows:
           branches: {only: master}
         name: deploy-el7-stable
         requires: [build-el7-stable]
+  build-deploy-el8-angie:
+    jobs:
+    - build:
+        dist: el8
+        filters:
+          branches: {only: angie}
+        name: build-el8-angie
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: angie}
+        name: deploy-el8-angie
+        requires: [build-el8-angie]
   build-deploy-el8-mainline:
     jobs:
     - build:
@@ -279,6 +321,20 @@ workflows:
           branches: {only: master}
         name: deploy-el8-stable
         requires: [build-el8-stable]
+  build-deploy-el9-angie:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: angie}
+        name: build-el9-angie
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: angie}
+        name: deploy-el9-angie
+        requires: [build-el9-angie]
   build-deploy-el9-mainline:
     jobs:
     - build:
@@ -336,6 +392,20 @@ workflows:
           branches: {only: master}
         name: deploy-el9-stable
         requires: [build-el9-stable]
+  build-deploy-fc36-angie:
+    jobs:
+    - build:
+        dist: fc36
+        filters:
+          branches: {only: angie}
+        name: build-fc36-angie
+    - deploy:
+        context: org-global
+        dist: fc36
+        filters:
+          branches: {only: angie}
+        name: deploy-fc36-angie
+        requires: [build-fc36-angie]
   build-deploy-fc36-mainline:
     jobs:
     - build:
@@ -378,6 +448,20 @@ workflows:
           branches: {only: master}
         name: deploy-fc36-stable
         requires: [build-fc36-stable]
+  build-deploy-fc37-angie:
+    jobs:
+    - build:
+        dist: fc37
+        filters:
+          branches: {only: angie}
+        name: build-fc37-angie
+    - deploy:
+        context: org-global
+        dist: fc37
+        filters:
+          branches: {only: angie}
+        name: deploy-fc37-angie
+        requires: [build-fc37-angie]
   build-deploy-fc37-mainline:
     jobs:
     - build:
@@ -420,6 +504,20 @@ workflows:
           branches: {only: master}
         name: deploy-fc37-stable
         requires: [build-fc37-stable]
+  build-deploy-sles15-angie:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: angie}
+        name: build-sles15-angie
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: angie}
+        name: deploy-sles15-angie
+        requires: [build-sles15-angie]
   build-deploy-sles15-mainline:
     jobs:
     - build:
