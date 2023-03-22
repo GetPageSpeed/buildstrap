@@ -22,6 +22,7 @@ distros:
     versions_check: false
     versions:
       - 2
+      - 2023
   sles:
     dist: sles
     description: "SUSE Linux Enterprise"
