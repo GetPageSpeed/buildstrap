@@ -16,6 +16,7 @@ distros:
     dist: fc
     dir: fedora
     description: "Fedora Linux"
+    has_rolling_release: True
   amazonlinux:
     dist: amzn
     description: "Amazon Linux"

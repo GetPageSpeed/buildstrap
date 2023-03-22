@@ -178,6 +178,21 @@ workflows:
           tags: {only: /^v.*/}
         name: deploy-fc37
         requires: [build-fc37]
+  build-deploy-fc38:
+    jobs:
+    - build:
+        dist: fc38
+        filters:
+          tags: {only: /.*/}
+        name: build-fc38
+    - deploy:
+        context: org-global
+        dist: fc38
+        filters:
+          branches: {ignore: /.*/}
+          tags: {only: /^v.*/}
+        name: deploy-fc38
+        requires: [build-fc38]
   build-deploy-sles15:
     jobs:
     - build:

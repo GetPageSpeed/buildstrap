@@ -30,12 +30,14 @@ for distro, distro_config in distros.items():
         distro_version
     ]
     # build against that many past releases of OS
-    os_versions = 2
-    if 'os_versions' in distro_config:
-        os_versions = int(distro_config['os_versions'])
+    os_versions = distro_config.get('os_versions', 2)
+
     # now add past release of the OS:
     for i in range(1, os_versions):
         distros[distro]['versions'].append(distro_version - i)
+
+    if distro_config.get('has_rolling_release', False):
+        distros[distro]['versions'].append(distro_version + 1)
 
 
 # which virtual NGINX branch builds on which git branch

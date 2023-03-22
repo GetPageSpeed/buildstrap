@@ -6,6 +6,7 @@ declare -A dists=(
   ["el9"]="redhat/9"
   ["fc37"]="fedora/37"
   ["fc36"]="fedora/36"
+  ["fc38"]="fedora/38"
   ["amzn2"]="amzn/2"
   ["amzn2023"]="amzn/2023"
   ["sles15"]="sles/15"
