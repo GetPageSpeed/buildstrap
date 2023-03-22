@@ -164,6 +164,62 @@ workflows:
           branches: {only: master}
         name: deploy-amzn2-stable
         requires: [build-amzn2-stable]
+  build-deploy-amzn2023-angie:
+    jobs:
+    - build:
+        dist: amzn2023
+        filters:
+          branches: {only: angie}
+        name: build-amzn2023-angie
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: angie}
+        name: deploy-amzn2023-angie
+        requires: [build-amzn2023-angie]
+  build-deploy-amzn2023-mainline:
+    jobs:
+    - build:
+        dist: amzn2023
+        filters:
+          branches: {only: mainline}
+        name: build-amzn2023-mainline
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: mainline}
+        name: deploy-amzn2023-mainline
+        requires: [build-amzn2023-mainline]
+  build-deploy-amzn2023-nginx-quic:
+    jobs:
+    - build:
+        dist: amzn2023
+        filters:
+          branches: {only: nginx-quic}
+        name: build-amzn2023-nginx-quic
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-amzn2023-nginx-quic
+        requires: [build-amzn2023-nginx-quic]
+  build-deploy-amzn2023-stable:
+    jobs:
+    - build:
+        dist: amzn2023
+        filters:
+          branches: {only: master}
+        name: build-amzn2023-stable
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: master}
+        name: deploy-amzn2023-stable
+        requires: [build-amzn2023-stable]
   build-deploy-el7-angie:
     jobs:
     - build:

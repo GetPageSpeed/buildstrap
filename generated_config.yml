@@ -81,6 +81,14 @@ workflows:
         dist: amzn2
         name: deploy-amzn2
         requires: [build-amzn2]
+  build-deploy-amzn2023:
+    jobs:
+    - build: {dist: amzn2023, name: build-amzn2023}
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        name: deploy-amzn2023
+        requires: [build-amzn2023]
   build-deploy-el7:
     jobs:
     - build: {dist: el7, name: build-el7}
