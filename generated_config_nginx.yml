@@ -448,62 +448,6 @@ workflows:
           branches: {only: master}
         name: deploy-el9-stable
         requires: [build-el9-stable]
-  build-deploy-fc36-angie:
-    jobs:
-    - build:
-        dist: fc36
-        filters:
-          branches: {only: angie}
-        name: build-fc36-angie
-    - deploy:
-        context: org-global
-        dist: fc36
-        filters:
-          branches: {only: angie}
-        name: deploy-fc36-angie
-        requires: [build-fc36-angie]
-  build-deploy-fc36-mainline:
-    jobs:
-    - build:
-        dist: fc36
-        filters:
-          branches: {only: mainline}
-        name: build-fc36-mainline
-    - deploy:
-        context: org-global
-        dist: fc36
-        filters:
-          branches: {only: mainline}
-        name: deploy-fc36-mainline
-        requires: [build-fc36-mainline]
-  build-deploy-fc36-nginx-quic:
-    jobs:
-    - build:
-        dist: fc36
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc36-nginx-quic
-    - deploy:
-        context: org-global
-        dist: fc36
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc36-nginx-quic
-        requires: [build-fc36-nginx-quic]
-  build-deploy-fc36-stable:
-    jobs:
-    - build:
-        dist: fc36
-        filters:
-          branches: {only: master}
-        name: build-fc36-stable
-    - deploy:
-        context: org-global
-        dist: fc36
-        filters:
-          branches: {only: master}
-        name: deploy-fc36-stable
-        requires: [build-fc36-stable]
   build-deploy-fc37-angie:
     jobs:
     - build:
@@ -616,6 +560,62 @@ workflows:
           branches: {only: master}
         name: deploy-fc38-stable
         requires: [build-fc38-stable]
+  build-deploy-fc39-angie:
+    jobs:
+    - build:
+        dist: fc39
+        filters:
+          branches: {only: angie}
+        name: build-fc39-angie
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: angie}
+        name: deploy-fc39-angie
+        requires: [build-fc39-angie]
+  build-deploy-fc39-mainline:
+    jobs:
+    - build:
+        dist: fc39
+        filters:
+          branches: {only: mainline}
+        name: build-fc39-mainline
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc39-mainline
+        requires: [build-fc39-mainline]
+  build-deploy-fc39-nginx-quic:
+    jobs:
+    - build:
+        dist: fc39
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc39-nginx-quic
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc39-nginx-quic
+        requires: [build-fc39-nginx-quic]
+  build-deploy-fc39-stable:
+    jobs:
+    - build:
+        dist: fc39
+        filters:
+          branches: {only: master}
+        name: build-fc39-stable
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: master}
+        name: deploy-fc39-stable
+        requires: [build-fc39-stable]
   build-deploy-sles15-angie:
     jobs:
     - build:
