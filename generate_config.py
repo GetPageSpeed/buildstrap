@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # fetch the latest release number for each OS and populate "releases" key in matrix.yml
 # with current and previous release numbers (building for last two major)
+import copy
 import shutil
 import stat
 
@@ -209,6 +210,22 @@ with open('generated_config_nginx_without_plesk.yml', 'a') as f:
 shutil.copy('partial_config_self.yml', 'generated_config_self.yml')
 with open('generated_config_self.yml', 'a') as f:
     yaml.dump(config_self, f, default_flow_style=None)
+
+# write generated_config_self_only_specs which will have filters for every job, on specs branch
+shutil.copy('partial_config.yml', 'generated_config_specs_only.yml')
+# set filters on branch to "specs" for every job
+config_specs_only = copy.deepcopy(config)
+for workflow in config_specs_only['workflows']:
+    for entry in config_specs_only['workflows'][workflow]['jobs']:
+        job_name = list(entry.keys())[0]
+        job = entry[job_name]
+        if 'filters' not in job:
+            job['filters'] = {}
+        if 'branches' not in job['filters']:
+            job['filters']['branches'] = {}
+        job['filters']['branches']['only'] = 'specs'
+with open('generated_config_specs_only.yml', 'a') as f:
+    yaml.dump(config_specs_only, f, default_flow_style=None)
 
 # write helper bash arrays for shell scripts
 # declare -A dists=(
