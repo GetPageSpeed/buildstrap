@@ -1,17 +1,39 @@
 ---
+# Defines supported distros and their specific settings, if any
+# This file is maintained manually, and is a source of automation to generate
+# build configs based on the latest versions of distros.
 
+# How many versions of OS to build for each distro, if not specified explicitly
+# Can be overriden by setting os_versions in a distro definition
+distro_defaults:
+  # How many latest versions of distro to build for
+  os_versions: 2
+  # Default packager, unless overriden in a distro definition
+  packager: dnf
 distros:
+  # The key of a distro is used by lastversion to check current version
+  # e.g. in this case `lastversion rhel` will run to determine latest RHEL version
   rhel:
     dist: el
     dir: redhat
     description: "CentOS/RHEL"
     has_plesk: True
-    # disable versions check and specify versions explicitly because we want to build 9 from stream until rhel 9 is released
+    # The setting to specify docker image to use for this distro
+    docker: rockylinux
+    # Specifies packager command to use for this distro
+    packager: dnf
+    # disable versions check and specify versions explicitly for now
     versions_check: false
     versions:
       - 7
       - 8
       - 9
+    # Override settings for specific versions
+    version_overrides:
+      7:
+        # The setting to specify docker image to use for this distro version
+        docker: centos
+        packager: yum
   fedora:
     dist: fc
     dir: fedora
@@ -24,7 +46,29 @@ distros:
     versions:
       - 2
       - 2023
+    version_overrides:
+      2:
+        packager: yum
   sles:
     dist: sles
     description: "SUSE Linux Enterprise"
     os_versions: 1
+    docker: opensuse/leap
+collections:
+  nginx:
+    branches:
+      stable:
+        description: "Stable"
+        git_branch: master
+      mainline:
+        description: "Mainline"
+      angie:
+        description: "Angie"
+      nginx-mod:
+        description: "NGINX-MOD"
+      tengine:
+        description: "Tengine"
+  varnish:
+    branches:
+      varnish60:
+        description: "Varnish 6.0 LTS"

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-# fetch the latest release number for each OS and populate "releases" key in matrix.yml
-# with current and previous release numbers (building for last two major)
+"""
+Fetch the latest release number for each OS and populate "releases" key in matrix.yml
+with current and previous release numbers (building for last two major)
+"""
 import copy
 import shutil
 import stat
+import json
 
 import lastversion
 import yaml
@@ -31,7 +34,8 @@ for distro, distro_config in distros.items():
         distro_version
     ]
     # build against that many past releases of OS
-    os_versions = distro_config.get('os_versions', 2)
+    os_versions = distro_config.get(
+        'os_versions', distros_config['distro_defaults']['os_versions'])
 
     # now add past release of the OS:
     for i in range(1, os_versions):
@@ -39,7 +43,6 @@ for distro, distro_config in distros.items():
 
     if distro_config.get('has_rolling_release', False):
         distros[distro]['versions'].append(distro_version + 1)
-
 
 # which virtual NGINX branch builds on which git branch
 nginx_branches = {
@@ -276,3 +279,11 @@ with open('matrix.sh', 'w') as f:
 
 st = os.stat('matrix.sh')
 os.chmod('matrix.sh', st.st_mode | stat.S_IEXEC)
+
+# Generate matrix.json which is useful for Repo Explorer feature at GetPageSpeed
+# Same as matrix.yml but in json format and with filled out versions
+# Just json dump distros variables
+with open('matrix.json', 'w', encoding="utf-8") as f:
+    json.dump(distros_config, f, indent=4)
+
+print("Done")
