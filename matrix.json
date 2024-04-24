@@ -30,9 +30,9 @@
             "description": "Fedora Linux",
             "has_rolling_release": true,
             "versions": [
+                40,
                 39,
-                38,
-                40
+                41
             ]
         },
         "amazonlinux": {
