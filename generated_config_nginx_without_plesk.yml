@@ -43,7 +43,7 @@ jobs:
       mod:
         type: integer
         default: 0
-    resource_class: small
+    resource_class: medium
     executor:
       name: rpmbuilder
       dist: << parameters.dist >>
