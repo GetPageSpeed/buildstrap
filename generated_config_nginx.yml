@@ -47,12 +47,16 @@ jobs:
       mod:
         type: integer
         default: 0
+      enable_repos:
+        type: string
+        default: ""
     resource_class: medium
     executor:
       name: rpmbuilder
       dist: << parameters.dist >>
       plesk: << parameters.plesk >>
       mod: << parameters.mod >>
+      enable_repos: << parameters.enable_repos >>
     steps:
       - checkout
       - run:
