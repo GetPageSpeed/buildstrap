@@ -152,6 +152,11 @@ for distro_name, distro_config in distros.items():
 
             config_nginx['workflows'][workflow_name] = workflow
 
+            if git_branch == 'mainline':
+                workflow['jobs'][0]['build']['environment'] = {
+                    'ENABLE_REPOS': 'getpagespeed-extras-mainline'
+                }
+
             if git_branch == 'nginx-mod':
                 workflow['jobs'][0]['build']['mod'] = 1
 
