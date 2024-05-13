@@ -23,6 +23,9 @@ executors:
       mod:
         type: integer
         default: 0
+      enable_repos:
+        type: string
+        default: ""
     docker:
       - image: getpagespeed/rpmbuilder:<< parameters.dist >>
     working_directory: /sources
@@ -30,6 +33,7 @@ executors:
       RPMLINT: << parameters.rpmlint >>
       PLESK: << parameters.plesk >>
       MOD: << parameters.mod >>
+      ENABLE_REPOS: << parameters.enable_repos >>
 jobs:
   build:
     parameters:
@@ -126,7 +130,7 @@ workflows:
     jobs:
     - build:
         dist: amzn2
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-amzn2-mainline
@@ -183,7 +187,7 @@ workflows:
     jobs:
     - build:
         dist: amzn2023
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-amzn2023-mainline
@@ -240,7 +244,7 @@ workflows:
     jobs:
     - build:
         dist: el7
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-el7-mainline
@@ -312,7 +316,7 @@ workflows:
     jobs:
     - build:
         dist: el8
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-el8-mainline
@@ -369,7 +373,7 @@ workflows:
     jobs:
     - build:
         dist: el9
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-el9-mainline
@@ -426,7 +430,7 @@ workflows:
     jobs:
     - build:
         dist: fc39
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-fc39-mainline
@@ -483,7 +487,7 @@ workflows:
     jobs:
     - build:
         dist: fc40
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-fc40-mainline
@@ -540,7 +544,7 @@ workflows:
     jobs:
     - build:
         dist: fc41
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-fc41-mainline
@@ -597,7 +601,7 @@ workflows:
     jobs:
     - build:
         dist: sles15
-        environment: {ENABLE_REPOS: getpagespeed-extras-mainline}
+        enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
         name: build-sles15-mainline
