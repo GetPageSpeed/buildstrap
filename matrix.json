@@ -7,6 +7,7 @@
         "rhel": {
             "dist": "el",
             "dir": "redhat",
+            "rpmbuilder_name": "centos",
             "description": "CentOS/RHEL",
             "has_plesk": true,
             "docker": "rockylinux",
@@ -28,11 +29,11 @@
             "dist": "fc",
             "dir": "fedora",
             "description": "Fedora Linux",
-            "has_rolling_release": true,
+            "include_rolling_release": false,
+            "rpmbuilder_name": "fedora",
             "versions": [
                 40,
-                39,
-                41
+                39
             ]
         },
         "amazonlinux": {
@@ -48,6 +49,7 @@
                     "packager": "yum"
                 }
             },
+            "rpmbuilder_name": "amazonlinux",
             "dir": "amzn"
         },
         "sles": {
@@ -55,6 +57,7 @@
             "description": "SUSE Linux Enterprise",
             "os_versions": 1,
             "docker": "opensuse/leap",
+            "rpmbuilder_name": "opensuse",
             "dir": "sles",
             "versions": [
                 15

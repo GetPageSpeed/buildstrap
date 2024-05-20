@@ -21,6 +21,8 @@ The `rpmbuilder` images are tagged based on expected RPM dist tag of an operatin
 So `matrix.yml` file simply specifies the operating system label as understood by `lastversion` and
 their corresponding dist tag in order to build against the correct `rpmbuilder` image.
 
+The `matrix.json` file contains all distros and their versions, used in various workflows.
+
 As a special case, we also create `generated_config_nginx.yml` which creates workflows bound to
 the many branches of NGINX we build against: `master` (aka `stable`), `mainline` and `plesk`.
 

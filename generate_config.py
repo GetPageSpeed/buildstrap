@@ -41,7 +41,7 @@ for distro, distro_config in distros.items():
     for i in range(1, os_versions):
         distros[distro]['versions'].append(distro_version - i)
 
-    if distro_config.get('has_rolling_release', False):
+    if distro_config.get('include_rolling_release', False):
         distros[distro]['versions'].append(distro_version + 1)
 
 # which virtual NGINX branch builds on which git branch
@@ -288,5 +288,38 @@ os.chmod('matrix.sh', st.st_mode | stat.S_IEXEC)
 # Just json dump distros variables
 with open('matrix.json', 'w', encoding="utf-8") as f:
     json.dump(distros_config, f, indent=4)
+
+# If rpmbuilder directory exists, cd into it, otherwise exit with error
+if not os.path.exists('../rpmbuilder'):
+    print("rpmbuilder directory not found")
+    exit(1)
+
+# cd into rpmbuilder directory
+os.chdir('../rpmbuilder')
+
+# Also write matrix.json for the rpmbuilder project
+with open('matrix.json', 'w', encoding="utf-8") as f:
+    json.dump(distros_config, f, indent=4)
+
+# Create special distro_versions.json for the rpmbuilder project
+# Used in matrix: of its GitHub Actions workflow
+distro_versions = []
+for distro_name, distro_config in distros.items():
+    for v in distro_config['versions']:
+        distro_versions.append({
+            "os": distro_config["rpmbuilder_name"],
+            "version": v
+        })
+with open('distro_versions.json', 'w', encoding="utf-8") as f:
+    json.dump({"include": distro_versions}, f, indent=4)
+
+# Write defaults file as well:
+default_lines = []
+for distro_name, distro_config in distros.items():
+    for v in distro_config['versions']:
+        default_lines.append(f"{distro_config['rpmbuilder_name']} {v}")
+# write to defaults file at ../rpmbuilder/defaults
+with open('defaults', 'w', encoding="utf-8") as f:
+    f.write("\n".join(default_lines))
 
 print("Done")
