@@ -45,7 +45,7 @@ distros:
     # Rawhide has too many issues and requires sponsoring due to workload and stability issues that needs to be addressed all the time
     # For example: Error: Path "/root/rpmbuild/BUILDROOT/hello-1.0-1.fc41.x86_64" is outside of $RPM_BUILD_ROOT
     # Go figure! So we disable builds on Rawhide for now
-    include_rolling_release: False
+    include_rolling_release: True
     rpmbuilder_name: fedora
   amazonlinux:
     dist: amzn
