@@ -530,6 +530,63 @@ workflows:
           branches: {only: master}
         name: deploy-fc40-stable
         requires: [build-fc40-stable]
+  build-deploy-fc41-angie:
+    jobs:
+    - build:
+        dist: fc41
+        filters:
+          branches: {only: angie}
+        name: build-fc41-angie
+    - deploy:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: angie}
+        name: deploy-fc41-angie
+        requires: [build-fc41-angie]
+  build-deploy-fc41-mainline:
+    jobs:
+    - build:
+        dist: fc41
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-fc41-mainline
+    - deploy:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc41-mainline
+        requires: [build-fc41-mainline]
+  build-deploy-fc41-nginx-quic:
+    jobs:
+    - build:
+        dist: fc41
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc41-nginx-quic
+    - deploy:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc41-nginx-quic
+        requires: [build-fc41-nginx-quic]
+  build-deploy-fc41-stable:
+    jobs:
+    - build:
+        dist: fc41
+        filters:
+          branches: {only: master}
+        name: build-fc41-stable
+    - deploy:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: master}
+        name: deploy-fc41-stable
+        requires: [build-fc41-stable]
   build-deploy-sles15-angie:
     jobs:
     - build:
