@@ -50,7 +50,11 @@ jobs:
       enable_repos:
         type: string
         default: ""
-    resource_class: medium
+      resource_class:
+        description: "The resource class to use for the build"
+        type: string
+        default: "medium"
+    resource_class: << parameters.resource_class >>
     executor:
       name: rpmbuilder
       dist: << parameters.dist >>

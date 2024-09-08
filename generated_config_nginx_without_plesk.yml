@@ -50,7 +50,11 @@ jobs:
       enable_repos:
         type: string
         default: ""
-    resource_class: medium
+      resource_class:
+        description: "The resource class to use for the build"
+        type: string
+        default: "medium"
+    resource_class: << parameters.resource_class >>
     executor:
       name: rpmbuilder
       dist: << parameters.dist >>
@@ -116,474 +120,978 @@ jobs:
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
             "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}/process.log 2>&1&"
 workflows:
-  build-deploy-amzn2-angie:
+  build-deploy-amzn2-angie-aarch64:
     jobs:
     - build:
         dist: amzn2
         filters:
           branches: {only: angie}
-        name: build-amzn2-angie
+        name: build-amzn2-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2
         filters:
           branches: {only: angie}
-        name: deploy-amzn2-angie
-        requires: [build-amzn2-angie]
-  build-deploy-amzn2-mainline:
+        name: deploy-amzn2-angie-aarch64
+        requires: [build-amzn2-angie-aarch64]
+  build-deploy-amzn2-angie-x86-64:
+    jobs:
+    - build:
+        dist: amzn2
+        filters:
+          branches: {only: angie}
+        name: build-amzn2-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: angie}
+        name: deploy-amzn2-angie-x86_64
+        requires: [build-amzn2-angie-x86_64]
+  build-deploy-amzn2-mainline-aarch64:
     jobs:
     - build:
         dist: amzn2
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-amzn2-mainline
+        name: build-amzn2-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2
         filters:
           branches: {only: mainline}
-        name: deploy-amzn2-mainline
-        requires: [build-amzn2-mainline]
-  build-deploy-amzn2-nginx-quic:
+        name: deploy-amzn2-mainline-aarch64
+        requires: [build-amzn2-mainline-aarch64]
+  build-deploy-amzn2-mainline-x86-64:
+    jobs:
+    - build:
+        dist: amzn2
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-amzn2-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: mainline}
+        name: deploy-amzn2-mainline-x86_64
+        requires: [build-amzn2-mainline-x86_64]
+  build-deploy-amzn2-nginx-quic-aarch64:
     jobs:
     - build:
         dist: amzn2
         filters:
           branches: {only: nginx-quic}
-        name: build-amzn2-nginx-quic
+        name: build-amzn2-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2
         filters:
           branches: {only: nginx-quic}
-        name: deploy-amzn2-nginx-quic
-        requires: [build-amzn2-nginx-quic]
-  build-deploy-amzn2-stable:
+        name: deploy-amzn2-nginx-quic-aarch64
+        requires: [build-amzn2-nginx-quic-aarch64]
+  build-deploy-amzn2-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: amzn2
+        filters:
+          branches: {only: nginx-quic}
+        name: build-amzn2-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-amzn2-nginx-quic-x86_64
+        requires: [build-amzn2-nginx-quic-x86_64]
+  build-deploy-amzn2-stable-aarch64:
     jobs:
     - build:
         dist: amzn2
         filters:
           branches: {only: master}
-        name: build-amzn2-stable
+        name: build-amzn2-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2
         filters:
           branches: {only: master}
-        name: deploy-amzn2-stable
-        requires: [build-amzn2-stable]
-  build-deploy-amzn2023-angie:
+        name: deploy-amzn2-stable-aarch64
+        requires: [build-amzn2-stable-aarch64]
+  build-deploy-amzn2-stable-x86-64:
+    jobs:
+    - build:
+        dist: amzn2
+        filters:
+          branches: {only: master}
+        name: build-amzn2-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2
+        filters:
+          branches: {only: master}
+        name: deploy-amzn2-stable-x86_64
+        requires: [build-amzn2-stable-x86_64]
+  build-deploy-amzn2023-angie-aarch64:
     jobs:
     - build:
         dist: amzn2023
         filters:
           branches: {only: angie}
-        name: build-amzn2023-angie
+        name: build-amzn2023-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2023
         filters:
           branches: {only: angie}
-        name: deploy-amzn2023-angie
-        requires: [build-amzn2023-angie]
-  build-deploy-amzn2023-mainline:
+        name: deploy-amzn2023-angie-aarch64
+        requires: [build-amzn2023-angie-aarch64]
+  build-deploy-amzn2023-angie-x86-64:
+    jobs:
+    - build:
+        dist: amzn2023
+        filters:
+          branches: {only: angie}
+        name: build-amzn2023-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: angie}
+        name: deploy-amzn2023-angie-x86_64
+        requires: [build-amzn2023-angie-x86_64]
+  build-deploy-amzn2023-mainline-aarch64:
     jobs:
     - build:
         dist: amzn2023
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-amzn2023-mainline
+        name: build-amzn2023-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2023
         filters:
           branches: {only: mainline}
-        name: deploy-amzn2023-mainline
-        requires: [build-amzn2023-mainline]
-  build-deploy-amzn2023-nginx-quic:
+        name: deploy-amzn2023-mainline-aarch64
+        requires: [build-amzn2023-mainline-aarch64]
+  build-deploy-amzn2023-mainline-x86-64:
+    jobs:
+    - build:
+        dist: amzn2023
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-amzn2023-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: mainline}
+        name: deploy-amzn2023-mainline-x86_64
+        requires: [build-amzn2023-mainline-x86_64]
+  build-deploy-amzn2023-nginx-quic-aarch64:
     jobs:
     - build:
         dist: amzn2023
         filters:
           branches: {only: nginx-quic}
-        name: build-amzn2023-nginx-quic
+        name: build-amzn2023-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2023
         filters:
           branches: {only: nginx-quic}
-        name: deploy-amzn2023-nginx-quic
-        requires: [build-amzn2023-nginx-quic]
-  build-deploy-amzn2023-stable:
+        name: deploy-amzn2023-nginx-quic-aarch64
+        requires: [build-amzn2023-nginx-quic-aarch64]
+  build-deploy-amzn2023-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: amzn2023
+        filters:
+          branches: {only: nginx-quic}
+        name: build-amzn2023-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-amzn2023-nginx-quic-x86_64
+        requires: [build-amzn2023-nginx-quic-x86_64]
+  build-deploy-amzn2023-stable-aarch64:
     jobs:
     - build:
         dist: amzn2023
         filters:
           branches: {only: master}
-        name: build-amzn2023-stable
+        name: build-amzn2023-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: amzn2023
         filters:
           branches: {only: master}
-        name: deploy-amzn2023-stable
-        requires: [build-amzn2023-stable]
-  build-deploy-el7-angie:
+        name: deploy-amzn2023-stable-aarch64
+        requires: [build-amzn2023-stable-aarch64]
+  build-deploy-amzn2023-stable-x86-64:
+    jobs:
+    - build:
+        dist: amzn2023
+        filters:
+          branches: {only: master}
+        name: build-amzn2023-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: amzn2023
+        filters:
+          branches: {only: master}
+        name: deploy-amzn2023-stable-x86_64
+        requires: [build-amzn2023-stable-x86_64]
+  build-deploy-el7-angie-aarch64:
     jobs:
     - build:
         dist: el7
         filters:
           branches: {only: angie}
-        name: build-el7-angie
+        name: build-el7-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el7
         filters:
           branches: {only: angie}
-        name: deploy-el7-angie
-        requires: [build-el7-angie]
-  build-deploy-el7-mainline:
+        name: deploy-el7-angie-aarch64
+        requires: [build-el7-angie-aarch64]
+  build-deploy-el7-angie-x86-64:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: angie}
+        name: build-el7-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: angie}
+        name: deploy-el7-angie-x86_64
+        requires: [build-el7-angie-x86_64]
+  build-deploy-el7-mainline-aarch64:
     jobs:
     - build:
         dist: el7
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-el7-mainline
+        name: build-el7-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el7
         filters:
           branches: {only: mainline}
-        name: deploy-el7-mainline
-        requires: [build-el7-mainline]
-  build-deploy-el7-nginx-mod:
+        name: deploy-el7-mainline-aarch64
+        requires: [build-el7-mainline-aarch64]
+  build-deploy-el7-mainline-x86-64:
+    jobs:
+    - build:
+        dist: el7
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-el7-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: mainline}
+        name: deploy-el7-mainline-x86_64
+        requires: [build-el7-mainline-x86_64]
+  build-deploy-el7-nginx-mod-aarch64:
     jobs:
     - build:
         dist: el7
         filters:
           branches: {only: nginx-mod}
         mod: 1
-        name: build-el7-nginx-mod
+        name: build-el7-nginx-mod-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el7
         filters:
           branches: {only: nginx-mod}
-        name: deploy-el7-nginx-mod
-        requires: [build-el7-nginx-mod]
-  build-deploy-el7-nginx-quic:
+        name: deploy-el7-nginx-mod-aarch64
+        requires: [build-el7-nginx-mod-aarch64]
+  build-deploy-el7-nginx-mod-x86-64:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: nginx-mod}
+        mod: 1
+        name: build-el7-nginx-mod-x86_64
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: nginx-mod}
+        name: deploy-el7-nginx-mod-x86_64
+        requires: [build-el7-nginx-mod-x86_64]
+  build-deploy-el7-nginx-quic-aarch64:
     jobs:
     - build:
         dist: el7
         filters:
           branches: {only: nginx-quic}
-        name: build-el7-nginx-quic
+        name: build-el7-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el7
         filters:
           branches: {only: nginx-quic}
-        name: deploy-el7-nginx-quic
-        requires: [build-el7-nginx-quic]
-  build-deploy-el7-stable:
+        name: deploy-el7-nginx-quic-aarch64
+        requires: [build-el7-nginx-quic-aarch64]
+  build-deploy-el7-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: nginx-quic}
+        name: build-el7-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-el7-nginx-quic-x86_64
+        requires: [build-el7-nginx-quic-x86_64]
+  build-deploy-el7-stable-aarch64:
     jobs:
     - build:
         dist: el7
         filters:
           branches: {only: master}
-        name: build-el7-stable
+        name: build-el7-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el7
         filters:
           branches: {only: master}
-        name: deploy-el7-stable
-        requires: [build-el7-stable]
-  build-deploy-el8-angie:
+        name: deploy-el7-stable-aarch64
+        requires: [build-el7-stable-aarch64]
+  build-deploy-el7-stable-x86-64:
+    jobs:
+    - build:
+        dist: el7
+        filters:
+          branches: {only: master}
+        name: build-el7-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: el7
+        filters:
+          branches: {only: master}
+        name: deploy-el7-stable-x86_64
+        requires: [build-el7-stable-x86_64]
+  build-deploy-el8-angie-aarch64:
     jobs:
     - build:
         dist: el8
         filters:
           branches: {only: angie}
-        name: build-el8-angie
+        name: build-el8-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el8
         filters:
           branches: {only: angie}
-        name: deploy-el8-angie
-        requires: [build-el8-angie]
-  build-deploy-el8-mainline:
+        name: deploy-el8-angie-aarch64
+        requires: [build-el8-angie-aarch64]
+  build-deploy-el8-angie-x86-64:
+    jobs:
+    - build:
+        dist: el8
+        filters:
+          branches: {only: angie}
+        name: build-el8-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: angie}
+        name: deploy-el8-angie-x86_64
+        requires: [build-el8-angie-x86_64]
+  build-deploy-el8-mainline-aarch64:
     jobs:
     - build:
         dist: el8
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-el8-mainline
+        name: build-el8-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el8
         filters:
           branches: {only: mainline}
-        name: deploy-el8-mainline
-        requires: [build-el8-mainline]
-  build-deploy-el8-nginx-quic:
+        name: deploy-el8-mainline-aarch64
+        requires: [build-el8-mainline-aarch64]
+  build-deploy-el8-mainline-x86-64:
+    jobs:
+    - build:
+        dist: el8
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-el8-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: mainline}
+        name: deploy-el8-mainline-x86_64
+        requires: [build-el8-mainline-x86_64]
+  build-deploy-el8-nginx-quic-aarch64:
     jobs:
     - build:
         dist: el8
         filters:
           branches: {only: nginx-quic}
-        name: build-el8-nginx-quic
+        name: build-el8-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el8
         filters:
           branches: {only: nginx-quic}
-        name: deploy-el8-nginx-quic
-        requires: [build-el8-nginx-quic]
-  build-deploy-el8-stable:
+        name: deploy-el8-nginx-quic-aarch64
+        requires: [build-el8-nginx-quic-aarch64]
+  build-deploy-el8-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: el8
+        filters:
+          branches: {only: nginx-quic}
+        name: build-el8-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-el8-nginx-quic-x86_64
+        requires: [build-el8-nginx-quic-x86_64]
+  build-deploy-el8-stable-aarch64:
     jobs:
     - build:
         dist: el8
         filters:
           branches: {only: master}
-        name: build-el8-stable
+        name: build-el8-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el8
         filters:
           branches: {only: master}
-        name: deploy-el8-stable
-        requires: [build-el8-stable]
-  build-deploy-el9-angie:
+        name: deploy-el8-stable-aarch64
+        requires: [build-el8-stable-aarch64]
+  build-deploy-el8-stable-x86-64:
+    jobs:
+    - build:
+        dist: el8
+        filters:
+          branches: {only: master}
+        name: build-el8-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: el8
+        filters:
+          branches: {only: master}
+        name: deploy-el8-stable-x86_64
+        requires: [build-el8-stable-x86_64]
+  build-deploy-el9-angie-aarch64:
     jobs:
     - build:
         dist: el9
         filters:
           branches: {only: angie}
-        name: build-el9-angie
+        name: build-el9-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el9
         filters:
           branches: {only: angie}
-        name: deploy-el9-angie
-        requires: [build-el9-angie]
-  build-deploy-el9-mainline:
+        name: deploy-el9-angie-aarch64
+        requires: [build-el9-angie-aarch64]
+  build-deploy-el9-angie-x86-64:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: angie}
+        name: build-el9-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: angie}
+        name: deploy-el9-angie-x86_64
+        requires: [build-el9-angie-x86_64]
+  build-deploy-el9-mainline-aarch64:
     jobs:
     - build:
         dist: el9
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-el9-mainline
+        name: build-el9-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el9
         filters:
           branches: {only: mainline}
-        name: deploy-el9-mainline
-        requires: [build-el9-mainline]
-  build-deploy-el9-nginx-quic:
+        name: deploy-el9-mainline-aarch64
+        requires: [build-el9-mainline-aarch64]
+  build-deploy-el9-mainline-x86-64:
+    jobs:
+    - build:
+        dist: el9
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-el9-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: mainline}
+        name: deploy-el9-mainline-x86_64
+        requires: [build-el9-mainline-x86_64]
+  build-deploy-el9-nginx-quic-aarch64:
     jobs:
     - build:
         dist: el9
         filters:
           branches: {only: nginx-quic}
-        name: build-el9-nginx-quic
+        name: build-el9-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el9
         filters:
           branches: {only: nginx-quic}
-        name: deploy-el9-nginx-quic
-        requires: [build-el9-nginx-quic]
-  build-deploy-el9-stable:
+        name: deploy-el9-nginx-quic-aarch64
+        requires: [build-el9-nginx-quic-aarch64]
+  build-deploy-el9-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: nginx-quic}
+        name: build-el9-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-el9-nginx-quic-x86_64
+        requires: [build-el9-nginx-quic-x86_64]
+  build-deploy-el9-stable-aarch64:
     jobs:
     - build:
         dist: el9
         filters:
           branches: {only: master}
-        name: build-el9-stable
+        name: build-el9-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: el9
         filters:
           branches: {only: master}
-        name: deploy-el9-stable
-        requires: [build-el9-stable]
-  build-deploy-fc39-angie:
+        name: deploy-el9-stable-aarch64
+        requires: [build-el9-stable-aarch64]
+  build-deploy-el9-stable-x86-64:
+    jobs:
+    - build:
+        dist: el9
+        filters:
+          branches: {only: master}
+        name: build-el9-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: el9
+        filters:
+          branches: {only: master}
+        name: deploy-el9-stable-x86_64
+        requires: [build-el9-stable-x86_64]
+  build-deploy-fc39-angie-aarch64:
     jobs:
     - build:
         dist: fc39
         filters:
           branches: {only: angie}
-        name: build-fc39-angie
+        name: build-fc39-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc39
         filters:
           branches: {only: angie}
-        name: deploy-fc39-angie
-        requires: [build-fc39-angie]
-  build-deploy-fc39-mainline:
+        name: deploy-fc39-angie-aarch64
+        requires: [build-fc39-angie-aarch64]
+  build-deploy-fc39-angie-x86-64:
+    jobs:
+    - build:
+        dist: fc39
+        filters:
+          branches: {only: angie}
+        name: build-fc39-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: angie}
+        name: deploy-fc39-angie-x86_64
+        requires: [build-fc39-angie-x86_64]
+  build-deploy-fc39-mainline-aarch64:
     jobs:
     - build:
         dist: fc39
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-fc39-mainline
+        name: build-fc39-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc39
         filters:
           branches: {only: mainline}
-        name: deploy-fc39-mainline
-        requires: [build-fc39-mainline]
-  build-deploy-fc39-nginx-quic:
+        name: deploy-fc39-mainline-aarch64
+        requires: [build-fc39-mainline-aarch64]
+  build-deploy-fc39-mainline-x86-64:
+    jobs:
+    - build:
+        dist: fc39
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-fc39-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc39-mainline-x86_64
+        requires: [build-fc39-mainline-x86_64]
+  build-deploy-fc39-nginx-quic-aarch64:
     jobs:
     - build:
         dist: fc39
         filters:
           branches: {only: nginx-quic}
-        name: build-fc39-nginx-quic
+        name: build-fc39-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc39
         filters:
           branches: {only: nginx-quic}
-        name: deploy-fc39-nginx-quic
-        requires: [build-fc39-nginx-quic]
-  build-deploy-fc39-stable:
+        name: deploy-fc39-nginx-quic-aarch64
+        requires: [build-fc39-nginx-quic-aarch64]
+  build-deploy-fc39-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: fc39
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc39-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc39-nginx-quic-x86_64
+        requires: [build-fc39-nginx-quic-x86_64]
+  build-deploy-fc39-stable-aarch64:
     jobs:
     - build:
         dist: fc39
         filters:
           branches: {only: master}
-        name: build-fc39-stable
+        name: build-fc39-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc39
         filters:
           branches: {only: master}
-        name: deploy-fc39-stable
-        requires: [build-fc39-stable]
-  build-deploy-fc40-angie:
+        name: deploy-fc39-stable-aarch64
+        requires: [build-fc39-stable-aarch64]
+  build-deploy-fc39-stable-x86-64:
+    jobs:
+    - build:
+        dist: fc39
+        filters:
+          branches: {only: master}
+        name: build-fc39-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: fc39
+        filters:
+          branches: {only: master}
+        name: deploy-fc39-stable-x86_64
+        requires: [build-fc39-stable-x86_64]
+  build-deploy-fc40-angie-aarch64:
     jobs:
     - build:
         dist: fc40
         filters:
           branches: {only: angie}
-        name: build-fc40-angie
+        name: build-fc40-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc40
         filters:
           branches: {only: angie}
-        name: deploy-fc40-angie
-        requires: [build-fc40-angie]
-  build-deploy-fc40-mainline:
+        name: deploy-fc40-angie-aarch64
+        requires: [build-fc40-angie-aarch64]
+  build-deploy-fc40-angie-x86-64:
+    jobs:
+    - build:
+        dist: fc40
+        filters:
+          branches: {only: angie}
+        name: build-fc40-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: fc40
+        filters:
+          branches: {only: angie}
+        name: deploy-fc40-angie-x86_64
+        requires: [build-fc40-angie-x86_64]
+  build-deploy-fc40-mainline-aarch64:
     jobs:
     - build:
         dist: fc40
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-fc40-mainline
+        name: build-fc40-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc40
         filters:
           branches: {only: mainline}
-        name: deploy-fc40-mainline
-        requires: [build-fc40-mainline]
-  build-deploy-fc40-nginx-quic:
+        name: deploy-fc40-mainline-aarch64
+        requires: [build-fc40-mainline-aarch64]
+  build-deploy-fc40-mainline-x86-64:
+    jobs:
+    - build:
+        dist: fc40
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-fc40-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: fc40
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc40-mainline-x86_64
+        requires: [build-fc40-mainline-x86_64]
+  build-deploy-fc40-nginx-quic-aarch64:
     jobs:
     - build:
         dist: fc40
         filters:
           branches: {only: nginx-quic}
-        name: build-fc40-nginx-quic
+        name: build-fc40-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc40
         filters:
           branches: {only: nginx-quic}
-        name: deploy-fc40-nginx-quic
-        requires: [build-fc40-nginx-quic]
-  build-deploy-fc40-stable:
+        name: deploy-fc40-nginx-quic-aarch64
+        requires: [build-fc40-nginx-quic-aarch64]
+  build-deploy-fc40-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: fc40
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc40-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: fc40
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc40-nginx-quic-x86_64
+        requires: [build-fc40-nginx-quic-x86_64]
+  build-deploy-fc40-stable-aarch64:
     jobs:
     - build:
         dist: fc40
         filters:
           branches: {only: master}
-        name: build-fc40-stable
+        name: build-fc40-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: fc40
         filters:
           branches: {only: master}
-        name: deploy-fc40-stable
-        requires: [build-fc40-stable]
-  build-deploy-sles15-angie:
+        name: deploy-fc40-stable-aarch64
+        requires: [build-fc40-stable-aarch64]
+  build-deploy-fc40-stable-x86-64:
+    jobs:
+    - build:
+        dist: fc40
+        filters:
+          branches: {only: master}
+        name: build-fc40-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: fc40
+        filters:
+          branches: {only: master}
+        name: deploy-fc40-stable-x86_64
+        requires: [build-fc40-stable-x86_64]
+  build-deploy-sles15-angie-aarch64:
     jobs:
     - build:
         dist: sles15
         filters:
           branches: {only: angie}
-        name: build-sles15-angie
+        name: build-sles15-angie-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: sles15
         filters:
           branches: {only: angie}
-        name: deploy-sles15-angie
-        requires: [build-sles15-angie]
-  build-deploy-sles15-mainline:
+        name: deploy-sles15-angie-aarch64
+        requires: [build-sles15-angie-aarch64]
+  build-deploy-sles15-angie-x86-64:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: angie}
+        name: build-sles15-angie-x86_64
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: angie}
+        name: deploy-sles15-angie-x86_64
+        requires: [build-sles15-angie-x86_64]
+  build-deploy-sles15-mainline-aarch64:
     jobs:
     - build:
         dist: sles15
         enable_repos: getpagespeed-extras-mainline
         filters:
           branches: {only: mainline}
-        name: build-sles15-mainline
+        name: build-sles15-mainline-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: sles15
         filters:
           branches: {only: mainline}
-        name: deploy-sles15-mainline
-        requires: [build-sles15-mainline]
-  build-deploy-sles15-nginx-quic:
+        name: deploy-sles15-mainline-aarch64
+        requires: [build-sles15-mainline-aarch64]
+  build-deploy-sles15-mainline-x86-64:
+    jobs:
+    - build:
+        dist: sles15
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-sles15-mainline-x86_64
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: mainline}
+        name: deploy-sles15-mainline-x86_64
+        requires: [build-sles15-mainline-x86_64]
+  build-deploy-sles15-nginx-quic-aarch64:
     jobs:
     - build:
         dist: sles15
         filters:
           branches: {only: nginx-quic}
-        name: build-sles15-nginx-quic
+        name: build-sles15-nginx-quic-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: sles15
         filters:
           branches: {only: nginx-quic}
-        name: deploy-sles15-nginx-quic
-        requires: [build-sles15-nginx-quic]
-  build-deploy-sles15-stable:
+        name: deploy-sles15-nginx-quic-aarch64
+        requires: [build-sles15-nginx-quic-aarch64]
+  build-deploy-sles15-nginx-quic-x86-64:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: nginx-quic}
+        name: build-sles15-nginx-quic-x86_64
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-sles15-nginx-quic-x86_64
+        requires: [build-sles15-nginx-quic-x86_64]
+  build-deploy-sles15-stable-aarch64:
     jobs:
     - build:
         dist: sles15
         filters:
           branches: {only: master}
-        name: build-sles15-stable
+        name: build-sles15-stable-aarch64
+        resource_class: arm.medium
     - deploy:
         context: org-global
         dist: sles15
         filters:
           branches: {only: master}
-        name: deploy-sles15-stable
-        requires: [build-sles15-stable]
+        name: deploy-sles15-stable-aarch64
+        requires: [build-sles15-stable-aarch64]
+  build-deploy-sles15-stable-x86-64:
+    jobs:
+    - build:
+        dist: sles15
+        filters:
+          branches: {only: master}
+        name: build-sles15-stable-x86_64
+    - deploy:
+        context: org-global
+        dist: sles15
+        filters:
+          branches: {only: master}
+        name: deploy-sles15-stable-x86_64
+        requires: [build-sles15-stable-x86_64]

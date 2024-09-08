@@ -28,7 +28,11 @@ jobs:
       dist:
         description: "The dist tag of OS to build for"
         type: string
-    resource_class: small
+      resource_class:
+        description: "The resource class to use for the build"
+        type: string
+        default: "small"
+    resource_class: << parameters.resource_class >>
     executor:
       name: rpmbuilder
       dist: << parameters.dist >>
