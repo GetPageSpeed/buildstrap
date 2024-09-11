@@ -79,6 +79,7 @@ def get_workflow(dist, arch, tags_only=False):
                 "build": {
                     "name": f"build-{dist}-{arch}",
                     "dist": dist,
+                    "context": "org-global",
                     # required since `deploy` has tag filters AND requires `build`
                     "filters": {"tags": {"only": "/.*/"}},
                 }
@@ -114,6 +115,7 @@ def get_nginx_workflow(dist, git_branch, nginx_branch, arch):
                 "build": {
                     "name": f"build-{dist}-{nginx_branch}-{arch}",
                     "dist": dist,
+                    "context": "org-global",
                     "filters": {"branches": {"only": git_branch}},
                 },
             },
@@ -175,11 +177,11 @@ for distro_name, distro_config in distros.items():
                 get_nginx_workflow(dist, git_branch, nginx_branch, "x86_64")
             )
 
-            config_nginx["workflows"][f"build-deploy-{dist}-{nginx_branch}-aarch64"] = (
-                get_nginx_workflow(dist, git_branch, nginx_branch, "aarch64")
-            )
-
             if git_branch != "plesk":
+                # add aarch64 build for all branches except plesk
+                config_nginx["workflows"][
+                    f"build-deploy-{dist}-{nginx_branch}-aarch64"
+                ] = get_nginx_workflow(dist, git_branch, nginx_branch, "aarch64")
                 config_nginx_without_plesk["workflows"][
                     f"build-deploy-{dist}-{nginx_branch}-x86-64"
                 ] = config_nginx["workflows"][

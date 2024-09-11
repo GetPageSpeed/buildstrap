@@ -82,6 +82,17 @@ jobs:
       - run:
           name: "Run the build itself: this will do rpmlint and check RPMs existence among other things."
           command: build
+      - run:
+          name: "Check for RPM files and halt if none exist"
+          command: |
+            set -x
+            if ls *.rpm 1> /dev/null 2>&1; then
+              echo "RPM files found. Proceeding with persistence to workspace."
+            else
+              echo "No RPM files found. Halting the job."
+              curl --request POST --url https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/cancel --header "Circle-Token: ${CIRCLE_TOKEN}"
+              circleci-agent step halt
+            fi
       - persist_to_workspace:
           root: /output
           paths:
@@ -123,6 +134,7 @@ workflows:
   build-deploy-amzn2-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         filters:
           branches: {only: angie}
@@ -138,6 +150,7 @@ workflows:
   build-deploy-amzn2-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         filters:
           branches: {only: angie}
@@ -152,6 +165,7 @@ workflows:
   build-deploy-amzn2-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -168,6 +182,7 @@ workflows:
   build-deploy-amzn2-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -183,6 +198,7 @@ workflows:
   build-deploy-amzn2-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         filters:
           branches: {only: nginx-quic}
@@ -198,6 +214,7 @@ workflows:
   build-deploy-amzn2-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         filters:
           branches: {only: nginx-quic}
@@ -212,6 +229,7 @@ workflows:
   build-deploy-amzn2-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         filters:
           branches: {only: master}
@@ -227,6 +245,7 @@ workflows:
   build-deploy-amzn2-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2
         filters:
           branches: {only: master}
@@ -241,6 +260,7 @@ workflows:
   build-deploy-amzn2023-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         filters:
           branches: {only: angie}
@@ -256,6 +276,7 @@ workflows:
   build-deploy-amzn2023-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         filters:
           branches: {only: angie}
@@ -270,6 +291,7 @@ workflows:
   build-deploy-amzn2023-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -286,6 +308,7 @@ workflows:
   build-deploy-amzn2023-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -301,6 +324,7 @@ workflows:
   build-deploy-amzn2023-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         filters:
           branches: {only: nginx-quic}
@@ -316,6 +340,7 @@ workflows:
   build-deploy-amzn2023-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         filters:
           branches: {only: nginx-quic}
@@ -330,6 +355,7 @@ workflows:
   build-deploy-amzn2023-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         filters:
           branches: {only: master}
@@ -345,6 +371,7 @@ workflows:
   build-deploy-amzn2023-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: amzn2023
         filters:
           branches: {only: master}
@@ -359,6 +386,7 @@ workflows:
   build-deploy-el7-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: angie}
@@ -374,6 +402,7 @@ workflows:
   build-deploy-el7-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: angie}
@@ -388,6 +417,7 @@ workflows:
   build-deploy-el7-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -404,6 +434,7 @@ workflows:
   build-deploy-el7-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -419,6 +450,7 @@ workflows:
   build-deploy-el7-nginx-mod-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: nginx-mod}
@@ -435,6 +467,7 @@ workflows:
   build-deploy-el7-nginx-mod-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: nginx-mod}
@@ -450,6 +483,7 @@ workflows:
   build-deploy-el7-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: nginx-quic}
@@ -465,6 +499,7 @@ workflows:
   build-deploy-el7-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: nginx-quic}
@@ -476,25 +511,10 @@ workflows:
           branches: {only: nginx-quic}
         name: deploy-el7-nginx-quic-x86_64
         requires: [build-el7-nginx-quic-x86_64]
-  build-deploy-el7-plesk-aarch64:
-    jobs:
-    - build:
-        dist: el7
-        filters:
-          branches: {only: plesk}
-        name: build-el7-plesk-aarch64
-        plesk: 18
-        resource_class: arm.medium
-    - deploy:
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: plesk}
-        name: deploy-el7-plesk-aarch64
-        requires: [build-el7-plesk-aarch64]
   build-deploy-el7-plesk-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: plesk}
@@ -510,6 +530,7 @@ workflows:
   build-deploy-el7-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: master}
@@ -525,6 +546,7 @@ workflows:
   build-deploy-el7-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el7
         filters:
           branches: {only: master}
@@ -539,6 +561,7 @@ workflows:
   build-deploy-el8-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         filters:
           branches: {only: angie}
@@ -554,6 +577,7 @@ workflows:
   build-deploy-el8-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         filters:
           branches: {only: angie}
@@ -568,6 +592,7 @@ workflows:
   build-deploy-el8-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -584,6 +609,7 @@ workflows:
   build-deploy-el8-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -599,6 +625,7 @@ workflows:
   build-deploy-el8-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         filters:
           branches: {only: nginx-quic}
@@ -614,6 +641,7 @@ workflows:
   build-deploy-el8-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         filters:
           branches: {only: nginx-quic}
@@ -625,25 +653,10 @@ workflows:
           branches: {only: nginx-quic}
         name: deploy-el8-nginx-quic-x86_64
         requires: [build-el8-nginx-quic-x86_64]
-  build-deploy-el8-plesk-aarch64:
-    jobs:
-    - build:
-        dist: el8
-        filters:
-          branches: {only: plesk}
-        name: build-el8-plesk-aarch64
-        plesk: 18
-        resource_class: arm.medium
-    - deploy:
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: plesk}
-        name: deploy-el8-plesk-aarch64
-        requires: [build-el8-plesk-aarch64]
   build-deploy-el8-plesk-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         filters:
           branches: {only: plesk}
@@ -659,6 +672,7 @@ workflows:
   build-deploy-el8-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         filters:
           branches: {only: master}
@@ -674,6 +688,7 @@ workflows:
   build-deploy-el8-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el8
         filters:
           branches: {only: master}
@@ -688,6 +703,7 @@ workflows:
   build-deploy-el9-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         filters:
           branches: {only: angie}
@@ -703,6 +719,7 @@ workflows:
   build-deploy-el9-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         filters:
           branches: {only: angie}
@@ -717,6 +734,7 @@ workflows:
   build-deploy-el9-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -733,6 +751,7 @@ workflows:
   build-deploy-el9-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -748,6 +767,7 @@ workflows:
   build-deploy-el9-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         filters:
           branches: {only: nginx-quic}
@@ -763,6 +783,7 @@ workflows:
   build-deploy-el9-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         filters:
           branches: {only: nginx-quic}
@@ -774,25 +795,10 @@ workflows:
           branches: {only: nginx-quic}
         name: deploy-el9-nginx-quic-x86_64
         requires: [build-el9-nginx-quic-x86_64]
-  build-deploy-el9-plesk-aarch64:
-    jobs:
-    - build:
-        dist: el9
-        filters:
-          branches: {only: plesk}
-        name: build-el9-plesk-aarch64
-        plesk: 18
-        resource_class: arm.medium
-    - deploy:
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: plesk}
-        name: deploy-el9-plesk-aarch64
-        requires: [build-el9-plesk-aarch64]
   build-deploy-el9-plesk-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         filters:
           branches: {only: plesk}
@@ -808,6 +814,7 @@ workflows:
   build-deploy-el9-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         filters:
           branches: {only: master}
@@ -823,6 +830,7 @@ workflows:
   build-deploy-el9-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: el9
         filters:
           branches: {only: master}
@@ -837,6 +845,7 @@ workflows:
   build-deploy-fc39-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         filters:
           branches: {only: angie}
@@ -852,6 +861,7 @@ workflows:
   build-deploy-fc39-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         filters:
           branches: {only: angie}
@@ -866,6 +876,7 @@ workflows:
   build-deploy-fc39-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -882,6 +893,7 @@ workflows:
   build-deploy-fc39-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -897,6 +909,7 @@ workflows:
   build-deploy-fc39-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         filters:
           branches: {only: nginx-quic}
@@ -912,6 +925,7 @@ workflows:
   build-deploy-fc39-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         filters:
           branches: {only: nginx-quic}
@@ -926,6 +940,7 @@ workflows:
   build-deploy-fc39-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         filters:
           branches: {only: master}
@@ -941,6 +956,7 @@ workflows:
   build-deploy-fc39-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc39
         filters:
           branches: {only: master}
@@ -955,6 +971,7 @@ workflows:
   build-deploy-fc40-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         filters:
           branches: {only: angie}
@@ -970,6 +987,7 @@ workflows:
   build-deploy-fc40-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         filters:
           branches: {only: angie}
@@ -984,6 +1002,7 @@ workflows:
   build-deploy-fc40-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -1000,6 +1019,7 @@ workflows:
   build-deploy-fc40-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -1015,6 +1035,7 @@ workflows:
   build-deploy-fc40-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         filters:
           branches: {only: nginx-quic}
@@ -1030,6 +1051,7 @@ workflows:
   build-deploy-fc40-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         filters:
           branches: {only: nginx-quic}
@@ -1044,6 +1066,7 @@ workflows:
   build-deploy-fc40-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         filters:
           branches: {only: master}
@@ -1059,6 +1082,7 @@ workflows:
   build-deploy-fc40-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: fc40
         filters:
           branches: {only: master}
@@ -1073,6 +1097,7 @@ workflows:
   build-deploy-sles15-angie-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         filters:
           branches: {only: angie}
@@ -1088,6 +1113,7 @@ workflows:
   build-deploy-sles15-angie-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         filters:
           branches: {only: angie}
@@ -1102,6 +1128,7 @@ workflows:
   build-deploy-sles15-mainline-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -1118,6 +1145,7 @@ workflows:
   build-deploy-sles15-mainline-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         enable_repos: getpagespeed-extras-mainline
         filters:
@@ -1133,6 +1161,7 @@ workflows:
   build-deploy-sles15-nginx-quic-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         filters:
           branches: {only: nginx-quic}
@@ -1148,6 +1177,7 @@ workflows:
   build-deploy-sles15-nginx-quic-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         filters:
           branches: {only: nginx-quic}
@@ -1162,6 +1192,7 @@ workflows:
   build-deploy-sles15-stable-aarch64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         filters:
           branches: {only: master}
@@ -1177,6 +1208,7 @@ workflows:
   build-deploy-sles15-stable-x86-64:
     jobs:
     - build:
+        context: org-global
         dist: sles15
         filters:
           branches: {only: master}
