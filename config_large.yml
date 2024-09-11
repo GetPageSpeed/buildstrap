@@ -22,6 +22,7 @@ jobs:
             curl "https://raw.githubusercontent.com/GetPageSpeed/buildstrap/main/generated_config.yml" -o .circleci/generated_config.yml
             sed -i 's@resource_class: small@resource_class: large@g' .circleci/generated_config.yml
             sed -i 's@default: "small"@default: "large"@g' .circleci/generated_config.yml
+            sed -i 's@resource_class: arm.medium@resource_class: arm.large@g' .circleci/generated_config.yml
       - continuation/continue:
           configuration_path: .circleci/generated_config.yml # use newly generated config to continue
 
