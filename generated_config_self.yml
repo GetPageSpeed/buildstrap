@@ -45,7 +45,7 @@ jobs:
           name: "Check for RPM files and halt if none exist"
           command: |
             set -x
-            if ls *.rpm 1> /dev/null 2>&1; then
+            if ls /output/*.rpm 1> /dev/null 2>&1; then
               echo "RPM files found. Proceeding with persistence to workspace."
             else
               echo "No RPM files found. Halting the job."
