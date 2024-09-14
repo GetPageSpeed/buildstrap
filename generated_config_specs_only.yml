@@ -67,6 +67,7 @@ jobs:
     executor:
       name: deploy
       dist: << parameters.dist >>
+      arch: << parameters.arch >>
     steps:
       - attach_workspace:
           at: /output
