@@ -5,11 +5,14 @@ executors:
     parameters:
       dist:
         type: string
+      arch:
+        type: string
     docker:
       - image: kroniak/ssh-client
     working_directory: /output
     environment:
       DISTRO: << parameters.dist >>
+      ARCH: << parameters.arch >>
   rpmbuilder:
     parameters:
       dist:
@@ -118,18 +121,18 @@ jobs:
           command: >
             ssh -o StrictHostKeyChecking=no
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
-            "mkdir -p ~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}"
+            "mkdir -p ~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}"
       - run:
           name: "Deploy all RPMs to GetPageSpeed repo."
           command: >
             scp -o StrictHostKeyChecking=no -q -r *.rpm
-            $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/
+            $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/
       - run:
           name: "Trigger Deploy Hook."
           command: >
             ssh -o StrictHostKeyChecking=no -q
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
-            "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${CIRCLE_BRANCH}/process.log 2>&1&"
+            "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${ARCH}/${CIRCLE_BRANCH}/process.log 2>&1&"
 workflows:
   build-deploy-amzn2-angie-aarch64:
     jobs:
@@ -141,6 +144,7 @@ workflows:
         name: build-amzn2-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2
         filters:
@@ -156,6 +160,7 @@ workflows:
           branches: {only: angie}
         name: build-amzn2-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2
         filters:
@@ -173,6 +178,7 @@ workflows:
         name: build-amzn2-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2
         filters:
@@ -189,6 +195,7 @@ workflows:
           branches: {only: mainline}
         name: build-amzn2-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2
         filters:
@@ -205,6 +212,7 @@ workflows:
         name: build-amzn2-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2
         filters:
@@ -220,6 +228,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-amzn2-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2
         filters:
@@ -236,6 +245,7 @@ workflows:
         name: build-amzn2-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2
         filters:
@@ -251,6 +261,7 @@ workflows:
           branches: {only: master}
         name: build-amzn2-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2
         filters:
@@ -267,6 +278,7 @@ workflows:
         name: build-amzn2023-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2023
         filters:
@@ -282,6 +294,7 @@ workflows:
           branches: {only: angie}
         name: build-amzn2023-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2023
         filters:
@@ -299,6 +312,7 @@ workflows:
         name: build-amzn2023-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2023
         filters:
@@ -315,6 +329,7 @@ workflows:
           branches: {only: mainline}
         name: build-amzn2023-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2023
         filters:
@@ -331,6 +346,7 @@ workflows:
         name: build-amzn2023-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2023
         filters:
@@ -346,6 +362,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-amzn2023-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2023
         filters:
@@ -362,6 +379,7 @@ workflows:
         name: build-amzn2023-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2023
         filters:
@@ -377,6 +395,7 @@ workflows:
           branches: {only: master}
         name: build-amzn2023-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2023
         filters:
@@ -393,6 +412,7 @@ workflows:
         name: build-el7-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el7
         filters:
@@ -408,6 +428,7 @@ workflows:
           branches: {only: angie}
         name: build-el7-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el7
         filters:
@@ -425,6 +446,7 @@ workflows:
         name: build-el7-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el7
         filters:
@@ -441,6 +463,7 @@ workflows:
           branches: {only: mainline}
         name: build-el7-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el7
         filters:
@@ -458,6 +481,7 @@ workflows:
         name: build-el7-nginx-mod-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el7
         filters:
@@ -474,6 +498,7 @@ workflows:
         mod: 1
         name: build-el7-nginx-mod-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el7
         filters:
@@ -490,6 +515,7 @@ workflows:
         name: build-el7-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el7
         filters:
@@ -505,6 +531,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-el7-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el7
         filters:
@@ -521,6 +548,7 @@ workflows:
         name: build-el7-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el7
         filters:
@@ -536,6 +564,7 @@ workflows:
           branches: {only: master}
         name: build-el7-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el7
         filters:
@@ -552,6 +581,7 @@ workflows:
         name: build-el8-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el8
         filters:
@@ -567,6 +597,7 @@ workflows:
           branches: {only: angie}
         name: build-el8-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el8
         filters:
@@ -584,6 +615,7 @@ workflows:
         name: build-el8-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el8
         filters:
@@ -600,6 +632,7 @@ workflows:
           branches: {only: mainline}
         name: build-el8-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el8
         filters:
@@ -616,6 +649,7 @@ workflows:
         name: build-el8-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el8
         filters:
@@ -631,6 +665,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-el8-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el8
         filters:
@@ -647,6 +682,7 @@ workflows:
         name: build-el8-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el8
         filters:
@@ -662,6 +698,7 @@ workflows:
           branches: {only: master}
         name: build-el8-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el8
         filters:
@@ -678,6 +715,7 @@ workflows:
         name: build-el9-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el9
         filters:
@@ -693,6 +731,7 @@ workflows:
           branches: {only: angie}
         name: build-el9-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el9
         filters:
@@ -710,6 +749,7 @@ workflows:
         name: build-el9-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el9
         filters:
@@ -726,6 +766,7 @@ workflows:
           branches: {only: mainline}
         name: build-el9-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el9
         filters:
@@ -742,6 +783,7 @@ workflows:
         name: build-el9-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el9
         filters:
@@ -757,6 +799,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-el9-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el9
         filters:
@@ -773,6 +816,7 @@ workflows:
         name: build-el9-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el9
         filters:
@@ -788,6 +832,7 @@ workflows:
           branches: {only: master}
         name: build-el9-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el9
         filters:
@@ -804,6 +849,7 @@ workflows:
         name: build-fc39-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc39
         filters:
@@ -819,6 +865,7 @@ workflows:
           branches: {only: angie}
         name: build-fc39-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc39
         filters:
@@ -836,6 +883,7 @@ workflows:
         name: build-fc39-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc39
         filters:
@@ -852,6 +900,7 @@ workflows:
           branches: {only: mainline}
         name: build-fc39-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc39
         filters:
@@ -868,6 +917,7 @@ workflows:
         name: build-fc39-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc39
         filters:
@@ -883,6 +933,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-fc39-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc39
         filters:
@@ -899,6 +950,7 @@ workflows:
         name: build-fc39-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc39
         filters:
@@ -914,6 +966,7 @@ workflows:
           branches: {only: master}
         name: build-fc39-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc39
         filters:
@@ -930,6 +983,7 @@ workflows:
         name: build-fc40-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc40
         filters:
@@ -945,6 +999,7 @@ workflows:
           branches: {only: angie}
         name: build-fc40-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc40
         filters:
@@ -962,6 +1017,7 @@ workflows:
         name: build-fc40-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc40
         filters:
@@ -978,6 +1034,7 @@ workflows:
           branches: {only: mainline}
         name: build-fc40-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc40
         filters:
@@ -994,6 +1051,7 @@ workflows:
         name: build-fc40-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc40
         filters:
@@ -1009,6 +1067,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-fc40-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc40
         filters:
@@ -1025,6 +1084,7 @@ workflows:
         name: build-fc40-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc40
         filters:
@@ -1040,6 +1100,7 @@ workflows:
           branches: {only: master}
         name: build-fc40-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc40
         filters:
@@ -1056,6 +1117,7 @@ workflows:
         name: build-sles15-angie-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: sles15
         filters:
@@ -1071,6 +1133,7 @@ workflows:
           branches: {only: angie}
         name: build-sles15-angie-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: sles15
         filters:
@@ -1088,6 +1151,7 @@ workflows:
         name: build-sles15-mainline-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: sles15
         filters:
@@ -1104,6 +1168,7 @@ workflows:
           branches: {only: mainline}
         name: build-sles15-mainline-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: sles15
         filters:
@@ -1120,6 +1185,7 @@ workflows:
         name: build-sles15-nginx-quic-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: sles15
         filters:
@@ -1135,6 +1201,7 @@ workflows:
           branches: {only: nginx-quic}
         name: build-sles15-nginx-quic-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: sles15
         filters:
@@ -1151,6 +1218,7 @@ workflows:
         name: build-sles15-stable-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: sles15
         filters:
@@ -1166,6 +1234,7 @@ workflows:
           branches: {only: master}
         name: build-sles15-stable-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: sles15
         filters:

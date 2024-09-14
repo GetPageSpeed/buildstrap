@@ -88,6 +88,7 @@ def get_workflow(dist, arch, tags_only=False):
                 "deploy": {
                     "name": f"deploy-{dist}-{arch}",
                     "dist": dist,
+                    "arch": arch,
                     "context": "org-global",
                     "requires": [f"build-{dist}-{arch}"],
                     "filters": {
@@ -123,6 +124,7 @@ def get_nginx_workflow(dist, git_branch, nginx_branch, arch):
                 "deploy": {
                     "name": f"deploy-{dist}-{nginx_branch}-{arch}",
                     "dist": dist,
+                    "arch": arch,
                     "context": "org-global",
                     "requires": [
                         f"build-{dist}-{nginx_branch}-{arch}",

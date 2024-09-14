@@ -5,11 +5,14 @@ executors:
     parameters:
       dist:
         type: string
+      arch:
+        type: string
     docker:
       - image: kroniak/ssh-client
     working_directory: /output
     environment:
       DISTRO: << parameters.dist >>
+      ARCH: << parameters.arch >>
   rpmbuilder:
     parameters:
       dist:
@@ -75,18 +78,18 @@ jobs:
           command: >
             ssh -o StrictHostKeyChecking=no
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
-            "mkdir -p ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO"
+            "mkdir -p ~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}"
       - run:
           name: "Deploy all RPMs to GetPageSpeed repo."
           command: >
             scp -o StrictHostKeyChecking=no -q -r *.rpm
-            $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/
+            $GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/
       - run:
           name: "Trigger Deploy Hook."
           command: >
             ssh -o StrictHostKeyChecking=no -q
             $GPS_BUILD_USER@$GPS_BUILD_SERVER
-            "nohup ~/scripts/incoming.sh $CIRCLE_PROJECT_REPONAME/$DISTRO/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/process.log 2>&1&"
+            "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${ARCH}/${CIRCLE_BRANCH}/process.log 2>&1&"
 workflows:
   build-deploy-amzn2-aarch64:
     jobs:
@@ -98,6 +101,7 @@ workflows:
         name: build-amzn2-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2
         filters:
@@ -114,6 +118,7 @@ workflows:
           tags: {only: /.*/}
         name: build-amzn2-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2
         filters:
@@ -131,6 +136,7 @@ workflows:
         name: build-amzn2023-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: amzn2023
         filters:
@@ -147,6 +153,7 @@ workflows:
           tags: {only: /.*/}
         name: build-amzn2023-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: amzn2023
         filters:
@@ -164,6 +171,7 @@ workflows:
         name: build-el7-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el7
         filters:
@@ -180,6 +188,7 @@ workflows:
           tags: {only: /.*/}
         name: build-el7-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el7
         filters:
@@ -197,6 +206,7 @@ workflows:
         name: build-el8-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el8
         filters:
@@ -213,6 +223,7 @@ workflows:
           tags: {only: /.*/}
         name: build-el8-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el8
         filters:
@@ -230,6 +241,7 @@ workflows:
         name: build-el9-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: el9
         filters:
@@ -246,6 +258,7 @@ workflows:
           tags: {only: /.*/}
         name: build-el9-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: el9
         filters:
@@ -263,6 +276,7 @@ workflows:
         name: build-fc39-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc39
         filters:
@@ -279,6 +293,7 @@ workflows:
           tags: {only: /.*/}
         name: build-fc39-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc39
         filters:
@@ -296,6 +311,7 @@ workflows:
         name: build-fc40-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: fc40
         filters:
@@ -312,6 +328,7 @@ workflows:
           tags: {only: /.*/}
         name: build-fc40-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: fc40
         filters:
@@ -329,6 +346,7 @@ workflows:
         name: build-sles15-aarch64
         resource_class: arm.medium
     - deploy:
+        arch: aarch64
         context: org-global
         dist: sles15
         filters:
@@ -345,6 +363,7 @@ workflows:
           tags: {only: /.*/}
         name: build-sles15-x86_64
     - deploy:
+        arch: x86_64
         context: org-global
         dist: sles15
         filters:
