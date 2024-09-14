@@ -64,6 +64,9 @@ jobs:
       dist:
         description: "The dist tag of OS to deploy for"
         type: string
+      arch:
+        description: "The architecture to deploy for"
+        type: string
     executor:
       name: deploy
       dist: << parameters.dist >>
