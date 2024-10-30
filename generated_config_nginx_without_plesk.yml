@@ -843,140 +843,6 @@ workflows:
           branches: {only: master}
         name: deploy-el9-stable-x86_64
         requires: [build-el9-stable-x86_64]
-  build-deploy-fc39-angie-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: angie}
-        name: build-fc39-angie-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: angie}
-        name: deploy-fc39-angie-aarch64
-        requires: [build-fc39-angie-aarch64]
-  build-deploy-fc39-angie-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: angie}
-        name: build-fc39-angie-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: angie}
-        name: deploy-fc39-angie-x86_64
-        requires: [build-fc39-angie-x86_64]
-  build-deploy-fc39-mainline-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        enable_repos: getpagespeed-extras-mainline
-        filters:
-          branches: {only: mainline}
-        name: build-fc39-mainline-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: mainline}
-        name: deploy-fc39-mainline-aarch64
-        requires: [build-fc39-mainline-aarch64]
-  build-deploy-fc39-mainline-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        enable_repos: getpagespeed-extras-mainline
-        filters:
-          branches: {only: mainline}
-        name: build-fc39-mainline-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: mainline}
-        name: deploy-fc39-mainline-x86_64
-        requires: [build-fc39-mainline-x86_64]
-  build-deploy-fc39-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc39-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc39-nginx-quic-aarch64
-        requires: [build-fc39-nginx-quic-aarch64]
-  build-deploy-fc39-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc39-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc39-nginx-quic-x86_64
-        requires: [build-fc39-nginx-quic-x86_64]
-  build-deploy-fc39-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: master}
-        name: build-fc39-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: master}
-        name: deploy-fc39-stable-aarch64
-        requires: [build-fc39-stable-aarch64]
-  build-deploy-fc39-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: master}
-        name: build-fc39-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc39
-        filters:
-          branches: {only: master}
-        name: deploy-fc39-stable-x86_64
-        requires: [build-fc39-stable-x86_64]
   build-deploy-fc40-angie-aarch64:
     jobs:
     - build:
@@ -1111,6 +977,140 @@ workflows:
           branches: {only: master}
         name: deploy-fc40-stable-x86_64
         requires: [build-fc40-stable-x86_64]
+  build-deploy-fc41-angie-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: angie}
+        name: build-fc41-angie-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: angie}
+        name: deploy-fc41-angie-aarch64
+        requires: [build-fc41-angie-aarch64]
+  build-deploy-fc41-angie-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: angie}
+        name: build-fc41-angie-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: angie}
+        name: deploy-fc41-angie-x86_64
+        requires: [build-fc41-angie-x86_64]
+  build-deploy-fc41-mainline-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-fc41-mainline-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc41-mainline-aarch64
+        requires: [build-fc41-mainline-aarch64]
+  build-deploy-fc41-mainline-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-fc41-mainline-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc41-mainline-x86_64
+        requires: [build-fc41-mainline-x86_64]
+  build-deploy-fc41-nginx-quic-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc41-nginx-quic-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc41-nginx-quic-aarch64
+        requires: [build-fc41-nginx-quic-aarch64]
+  build-deploy-fc41-nginx-quic-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: nginx-quic}
+        name: build-fc41-nginx-quic-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: nginx-quic}
+        name: deploy-fc41-nginx-quic-x86_64
+        requires: [build-fc41-nginx-quic-x86_64]
+  build-deploy-fc41-stable-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: master}
+        name: build-fc41-stable-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: master}
+        name: deploy-fc41-stable-aarch64
+        requires: [build-fc41-stable-aarch64]
+  build-deploy-fc41-stable-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: master}
+        name: build-fc41-stable-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc41
+        filters:
+          branches: {only: master}
+        name: deploy-fc41-stable-x86_64
+        requires: [build-fc41-stable-x86_64]
   build-deploy-sles15-angie-aarch64:
     jobs:
     - build:
