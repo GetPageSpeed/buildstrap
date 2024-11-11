@@ -1,2 +1,3 @@
 # v3.5.3 has applied the fix for properly fetching distro version from "15 SP-6" (for SLES)
 lastversion>=3.5.3
+ruamel.yaml

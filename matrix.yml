@@ -66,6 +66,19 @@ distros:
     rpmbuilder_name: opensuse
 collections:
   nginx:
+    custom_steps_after_checkout:
+      - run:
+          name: "Set up RPM macro reflecting the NGINX branch"
+          command: |
+            echo "%nginx_branch ${CIRCLE_BRANCH}" >> rpmmacros
+      - run:
+          name: "Set up %plesk macro if passed by a job"
+          command: |
+            [ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
+            # we generate both nginx-module-<foo> and sw-nginx-module-<foo> from a single spec file, so:
+            [ -z ${PLESK+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
+            [ -z ${MOD+x} ] || echo "%_nginx_mod ${MOD}" >> rpmmacros
+            [ -z ${MOD+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
     branches:
       stable:
         description: "Stable"
