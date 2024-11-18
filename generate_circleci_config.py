@@ -2,6 +2,8 @@
 import os
 import argparse
 import json
+import re
+
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.scalarstring import LiteralScalarString, FoldedScalarString
@@ -42,10 +44,19 @@ if len([f for f in os.listdir(project_dir) if f.endswith(".spec")]) == 1:
         spec_lines = f.readlines()
         # look for "BuildArch: noarch" in the spec file
         for line in spec_lines:
-            # remove dup1cqte spaces and check if the line contains "BuildArch: noarch"
-            line = line.strip().replace(" ", "")
-            if "BuildArch:noarch" in line:
-                archs = ["noarch"]
+            # replace duplicate spaces/tabs with a single space
+            line = re.sub(r"\s+", " ", line.strip())
+            # look for BuildArch: noarch in the spec file
+            if line.startswith("BuildArch:"):
+                build_arch = line.split(":", maxsplit=1)[1].strip()
+                if build_arch == "noarch":
+                    archs = ["noarch"]
+                    break
+            # look for ExclusiveArch: x86_64 in the spec file
+            if line.startswith("ExclusiveArch:"):
+                exclusive_archs = line.split(":", maxsplit=1)[1].strip()
+                exclusive_archs = exclusive_archs.split(" ")
+                archs = exclusive_archs
                 break
 exclude_archs = project_settings.get("exclude_archs", [])
 
@@ -368,3 +379,10 @@ with open(config_file, "w") as f:
     yaml.dump(circleci_config, f)
 
 print(f"CircleCI configuration generated at {config_file}")
+
+# git push changes to the repository
+# git add --all .
+# if ! git diff-index --quiet HEAD; then
+#   git commit -m "Ensure buildstrap is up-to-date"
+#   git push
+# fi
