@@ -79,10 +79,16 @@ collection_name = None
 # if project diredtory nqme starts with "nginx-", set collection_name to "nginx"
 if project_dir.startswith("nginx-"):
     collection_name = "nginx"
+# settings can specify collection name explicitly
+collection_name = project_settings.get("collection", collection_name)
 if collection_name:
     branches = matrix_config["collections"][collection_name]["branches"]
 # project can override branches or specify 'all'
 branches = project_settings.get("branches", branches)
+# project can explicitly specify a set of branches to reduce, using branch:
+# then filter out branches that are not in the list
+if "branch" in project_settings:
+    branches = {k: v for k, v in branches.items() if k in project_settings["branch"]}
 
 resource_class = "medium"
 # if only noarch, fine with small
@@ -355,6 +361,10 @@ for distro_name, distro_info in distros.items():
                         "filters": {"branches": {"only": [branch]}},
                     }
                 }
+                # add enable_repos parameter for nginx collection
+                # enabling the repo at build time ensures existence check for already built RPMs
+                if collection_name == "nginx" and branch != "stable":
+                    build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
 
                 # if branch is "master", add "main" as well
                 if branch == "master":
