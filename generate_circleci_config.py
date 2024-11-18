@@ -24,7 +24,7 @@ project_dir = os.path.abspath(args.project_dir)
 settings_file = os.path.join(project_dir, "settings.yml")
 if os.path.exists(settings_file):
     with open(settings_file, "r") as f:
-        project_settings = yaml.safe_load(f)
+        project_settings = yaml.load(f)
 else:
     project_settings = {}
 
@@ -81,11 +81,19 @@ if project_dir.startswith("nginx-"):
     collection_name = "nginx"
 if collection_name:
     branches = matrix_config["collections"][collection_name]["branches"]
+# project can override branches or specify 'all'
+branches = project_settings.get("branches", branches)
 
 resource_class = "medium"
 # if only noarch, fine with small
 if len(archs) == 1 and "noarch" in archs:
     resource_class = "small"
+# projects may override resource class
+resource_class = project_settings.get("resource_class", resource_class)
+arm_resource_class_mappings = {"small": "medium"}
+arm_resource_class = "arm." + arm_resource_class_mappings.get(
+    resource_class, resource_class
+)
 
 command_set_nginx_macros = LiteralScalarString(
     r"""[ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
@@ -302,7 +310,6 @@ workflows = {}
 def get_workflow_name(dist, version, branch, arch):
     # if this is the only branch, don't include it in the workflow name
     # note that brandh is a dictionary, so we need to get the key count
-    print(len(branches))
     if len(branches) == 1:
         return f"build-deploy-{dist}{version}-{arch}"
     return f"build-deploy-{dist}{version}-{branch}-{arch}"
@@ -349,9 +356,13 @@ for distro_name, distro_info in distros.items():
                     }
                 }
 
+                # if branch is "master", add "main" as well
+                if branch == "master":
+                    build_job["build"]["filters"]["branches"]["only"].append("main")
+
                 # Add extra parameters for 'aarch64'
                 if arch == "aarch64":
-                    build_job["build"]["resource_class"] = "arm.medium"
+                    build_job["build"]["resource_class"] = arm_resource_class
 
                 deploy_job = {
                     "deploy": {
@@ -363,6 +374,10 @@ for distro_name, distro_info in distros.items():
                         "requires": [build_job_name],
                     }
                 }
+
+                # if branch is "master", add "main" as well
+                if branch == "master":
+                    deploy_job["deploy"]["filters"]["branches"]["only"].append("main")
 
                 # Construct the workflow
                 workflows[workflow_name] = {"jobs": [build_job, deploy_job]}
@@ -379,10 +394,3 @@ with open(config_file, "w") as f:
     yaml.dump(circleci_config, f)
 
 print(f"CircleCI configuration generated at {config_file}")
-
-# git push changes to the repository
-# git add --all .
-# if ! git diff-index --quiet HEAD; then
-#   git commit -m "Ensure buildstrap is up-to-date"
-#   git push
-# fi
