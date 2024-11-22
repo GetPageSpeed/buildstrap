@@ -547,6 +547,7 @@ workflows:
     - build:
         context: org-global
         dist: el7
+        enable_repos: getpagespeed-extras-plesk
         filters:
           branches: {only: plesk}
         name: build-el7-plesk-x86_64
@@ -698,6 +699,7 @@ workflows:
     - build:
         context: org-global
         dist: el8
+        enable_repos: getpagespeed-extras-plesk
         filters:
           branches: {only: plesk}
         name: build-el8-plesk-x86_64
@@ -849,6 +851,7 @@ workflows:
     - build:
         context: org-global
         dist: el9
+        enable_repos: getpagespeed-extras-plesk
         filters:
           branches: {only: plesk}
         name: build-el9-plesk-x86_64
