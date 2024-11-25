@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import fnmatch
 import os
 import argparse
 import json
@@ -11,6 +12,8 @@ from ruamel.yaml.scalarstring import LiteralScalarString, FoldedScalarString
 # Initialize YAML handler
 yaml = YAML()
 yaml.default_flow_style = False
+# Instruct the representer to ignore aliases
+yaml.representer.ignore_aliases = lambda *args: True
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Generate CircleCI configuration.")
@@ -25,6 +28,8 @@ settings_file = os.path.join(project_dir, "settings.yml")
 if os.path.exists(settings_file):
     with open(settings_file, "r") as f:
         project_settings = yaml.load(f)
+    if project_settings is None:
+        project_settings = {}
 else:
     project_settings = {}
 
@@ -77,7 +82,9 @@ branches = {
 }
 collection_name = None
 # if project diredtory nqme starts with "nginx-", set collection_name to "nginx"
-if project_dir.startswith("nginx-"):
+# get base name of the directory
+project_dir_base = os.path.basename(project_dir)
+if project_dir_base.startswith("nginx-"):
     collection_name = "nginx"
 # settings can specify collection name explicitly
 collection_name = project_settings.get("collection", collection_name)
@@ -89,6 +96,13 @@ branches = project_settings.get("branches", branches)
 # then filter out branches that are not in the list
 if "branch" in project_settings:
     branches = {k: v for k, v in branches.items() if k in project_settings["branch"]}
+# project can exclude branches, e.g. plesk, by specifying exclude_branches:
+if "exclude_branches" in project_settings:
+    branches = {
+        k: v
+        for k, v in branches.items()
+        if k not in project_settings["exclude_branches"]
+    }
 
 resource_class = "medium"
 # if only noarch, fine with small
@@ -344,13 +358,36 @@ for distro_name, distro_info in distros.items():
     versions = distro_info.get("versions", [])
     for version in versions:
         for branch in branches:
+            branch_config = branches[branch]
+            # if only_dists list is present in branch_config, compare each element as wildcard "*" against current dist
+            # and if matches, skip this distro
+
+            if "only_dists" in branch_config:
+                if not any(
+                    fnmatch.fnmatch(dist, pattern)
+                    for pattern in branch_config["only_dists"]
+                ):
+                    continue
             for arch in archs:
                 # Skip architectures that are not supported
                 if arch == "aarch64" and not distro_info.get("has_aarch64", True):
                     continue
+                # branch config
+                if "only_archs" in branch_config:
+                    if not any(
+                        fnmatch.fnmatch(arch, pattern)
+                        for pattern in branch_config["only_archs"]
+                    ):
+                        continue
                 workflow_name = get_workflow_name(dist, version, branch, arch)
                 build_job_name = get_build_job_name(dist, version, branch, arch)
                 deploy_job_name = get_deploy_job_name(dist, version, branch, arch)
+
+                only_branches = [branch]
+                # if branch is "master", add "main" as well
+                main_branches = ["main", "master", "stable"]
+                if branch in main_branches:
+                    only_branches = main_branches
 
                 # Build job parameters
                 build_job = {
@@ -358,17 +395,13 @@ for distro_name, distro_info in distros.items():
                         "name": build_job_name,
                         "context": "org-global",
                         "dist": f"{dist}{version}",
-                        "filters": {"branches": {"only": [branch]}},
+                        "filters": {"branches": {"only": only_branches}},
                     }
                 }
                 # add enable_repos parameter for nginx collection
                 # enabling the repo at build time ensures existence check for already built RPMs
                 if collection_name == "nginx" and branch != "stable":
                     build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
-
-                # if branch is "master", add "main" as well
-                if branch == "master":
-                    build_job["build"]["filters"]["branches"]["only"].append("main")
 
                 # Add extra parameters for 'aarch64'
                 if arch == "aarch64":
@@ -380,7 +413,7 @@ for distro_name, distro_info in distros.items():
                         "context": "org-global",
                         "dist": f"{dist}{version}",
                         "arch": arch,
-                        "filters": {"branches": {"only": [branch]}},
+                        "filters": {"branches": {"only": only_branches}},
                         "requires": [build_job_name],
                     }
                 }

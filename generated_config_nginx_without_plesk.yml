@@ -206,39 +206,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-amzn2-mainline-x86_64
         requires: [build-amzn2-mainline-x86_64]
-  build-deploy-amzn2-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: nginx-quic}
-        name: build-amzn2-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-amzn2-nginx-quic-aarch64
-        requires: [build-amzn2-nginx-quic-aarch64]
-  build-deploy-amzn2-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: nginx-quic}
-        name: build-amzn2-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-amzn2-nginx-quic-x86_64
-        requires: [build-amzn2-nginx-quic-x86_64]
   build-deploy-amzn2-stable-aarch64:
     jobs:
     - build:
@@ -340,39 +307,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-amzn2023-mainline-x86_64
         requires: [build-amzn2023-mainline-x86_64]
-  build-deploy-amzn2023-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: nginx-quic}
-        name: build-amzn2023-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-amzn2023-nginx-quic-aarch64
-        requires: [build-amzn2023-nginx-quic-aarch64]
-  build-deploy-amzn2023-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: nginx-quic}
-        name: build-amzn2023-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-amzn2023-nginx-quic-x86_64
-        requires: [build-amzn2023-nginx-quic-x86_64]
   build-deploy-amzn2023-stable-aarch64:
     jobs:
     - build:
@@ -509,39 +443,6 @@ workflows:
           branches: {only: nginx-mod}
         name: deploy-el7-nginx-mod-x86_64
         requires: [build-el7-nginx-mod-x86_64]
-  build-deploy-el7-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: nginx-quic}
-        name: build-el7-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-el7-nginx-quic-aarch64
-        requires: [build-el7-nginx-quic-aarch64]
-  build-deploy-el7-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: nginx-quic}
-        name: build-el7-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-el7-nginx-quic-x86_64
-        requires: [build-el7-nginx-quic-x86_64]
   build-deploy-el7-stable-aarch64:
     jobs:
     - build:
@@ -643,39 +544,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-el8-mainline-x86_64
         requires: [build-el8-mainline-x86_64]
-  build-deploy-el8-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: nginx-quic}
-        name: build-el8-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-el8-nginx-quic-aarch64
-        requires: [build-el8-nginx-quic-aarch64]
-  build-deploy-el8-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: nginx-quic}
-        name: build-el8-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-el8-nginx-quic-x86_64
-        requires: [build-el8-nginx-quic-x86_64]
   build-deploy-el8-stable-aarch64:
     jobs:
     - build:
@@ -777,39 +645,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-el9-mainline-x86_64
         requires: [build-el9-mainline-x86_64]
-  build-deploy-el9-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: nginx-quic}
-        name: build-el9-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-el9-nginx-quic-aarch64
-        requires: [build-el9-nginx-quic-aarch64]
-  build-deploy-el9-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: nginx-quic}
-        name: build-el9-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-el9-nginx-quic-x86_64
-        requires: [build-el9-nginx-quic-x86_64]
   build-deploy-el9-stable-aarch64:
     jobs:
     - build:
@@ -911,39 +746,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-fc40-mainline-x86_64
         requires: [build-fc40-mainline-x86_64]
-  build-deploy-fc40-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc40
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc40-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc40
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc40-nginx-quic-aarch64
-        requires: [build-fc40-nginx-quic-aarch64]
-  build-deploy-fc40-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc40
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc40-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc40
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc40-nginx-quic-x86_64
-        requires: [build-fc40-nginx-quic-x86_64]
   build-deploy-fc40-stable-aarch64:
     jobs:
     - build:
@@ -1045,39 +847,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-fc41-mainline-x86_64
         requires: [build-fc41-mainline-x86_64]
-  build-deploy-fc41-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc41
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc41-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc41
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc41-nginx-quic-aarch64
-        requires: [build-fc41-nginx-quic-aarch64]
-  build-deploy-fc41-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc41
-        filters:
-          branches: {only: nginx-quic}
-        name: build-fc41-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc41
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-fc41-nginx-quic-x86_64
-        requires: [build-fc41-nginx-quic-x86_64]
   build-deploy-fc41-stable-aarch64:
     jobs:
     - build:
@@ -1179,39 +948,6 @@ workflows:
           branches: {only: mainline}
         name: deploy-sles15-mainline-x86_64
         requires: [build-sles15-mainline-x86_64]
-  build-deploy-sles15-nginx-quic-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: sles15
-        filters:
-          branches: {only: nginx-quic}
-        name: build-sles15-nginx-quic-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: sles15
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-sles15-nginx-quic-aarch64
-        requires: [build-sles15-nginx-quic-aarch64]
-  build-deploy-sles15-nginx-quic-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: sles15
-        filters:
-          branches: {only: nginx-quic}
-        name: build-sles15-nginx-quic-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: sles15
-        filters:
-          branches: {only: nginx-quic}
-        name: deploy-sles15-nginx-quic-x86_64
-        requires: [build-sles15-nginx-quic-x86_64]
   build-deploy-sles15-stable-aarch64:
     jobs:
     - build:
