@@ -379,6 +379,14 @@ for distro_name, distro_info in distros.items():
                         for pattern in branch_config["only_archs"]
                     ):
                         continue
+                # check if this distro and arch has been excluded
+                # exclude: config can either have exclude: el or el7 or exclude: el7-x86_64 items
+                if dist in project_settings.get("exclude", []):
+                    continue
+                if f"{dist}{version}" in project_settings.get("exclude", []):
+                    continue
+                if f"{dist}{version}-{arch}" in project_settings.get("exclude", []):
+                    continue
                 workflow_name = get_workflow_name(dist, version, branch, arch)
                 build_job_name = get_build_job_name(dist, version, branch, arch)
                 deploy_job_name = get_deploy_job_name(dist, version, branch, arch)

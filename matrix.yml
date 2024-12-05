@@ -81,10 +81,10 @@ collections:
             [ -z ${MOD+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
     branches:
       stable:
-        description: "Stable"
+        description: "Stable NGINX"
         git_branch: master
       mainline:
-        description: "Mainline"
+        description: "Mainline NGINX"
       angie:
         description: "Angie"
       nginx-mod:
@@ -98,6 +98,10 @@ collections:
           - "el*"  # CentOS/RHEL
         only_archs:
           - x86_64
+      freenginx-stable:
+        description: "FreeNGINX Stable"
+      freenginx-mainline:
+        description: "FreeNGINX Mainline"
   varnish:
     branches:
       varnish60:
