@@ -131,6 +131,7 @@ command_spec_files_cleanup = LiteralScalarString(
 command_check_rpm_files_halt = LiteralScalarString(
     r"""if ls /output/*.rpm 1> /dev/null 2>&1; then
   echo "RPM files found. Proceeding with persistence to workspace."
+  ls -al /output/*.rpm
 else
   echo "No RPM files found. Halting the job."
   curl --request POST --url https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/cancel --header "Circle-Token: ${CIRCLE_TOKEN}"
@@ -145,7 +146,7 @@ command_incoming_mkdir = FoldedScalarString(
 )
 
 command_deploy_all_rpms = FoldedScalarString(
-    "ls -al *.rpm & scp -o StrictHostKeyChecking=no -q -r *.rpm "
+    "scp -o StrictHostKeyChecking=no -q -r *.rpm "
     "$GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/"
 )
 
