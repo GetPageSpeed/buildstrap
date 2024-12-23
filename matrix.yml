@@ -79,6 +79,9 @@ collections:
             [ -z ${PLESK+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
             [ -z ${MOD+x} ] || echo "%_nginx_mod ${MOD}" >> rpmmacros
             [ -z ${MOD+x} ] || (echo >> rpmlint.config && echo 'addFilter ("E: invalid-spec-name")' >> rpmlint.config)
+    # which virtual NGINX branch builds on which git branch
+    # NGINX branch is either an NGINX fork, or an actual NGINX branch like mainline or stable
+    # or a custom build for a panel like Plesk
     branches:
       stable:
         description: "Stable NGINX"
@@ -87,6 +90,9 @@ collections:
         description: "Mainline NGINX"
       angie:
         description: "Angie"
+      # spec is always equal to stable (with mod conditionals), but we only push those modules which need unique version
+      # due to SSL requirements, etc.
+      # nginx-mod for modules only needed for e.g. EL7 where we built against non-system OpenSSL, but not in EL8, etc.
       nginx-mod:
         description: "NGINX-MOD"
       tengine:

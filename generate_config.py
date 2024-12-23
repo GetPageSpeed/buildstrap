@@ -43,17 +43,7 @@ for distro, distro_config in distros.items():
     if distro_config.get("include_rolling_release", False):
         distros[distro]["versions"].append(distro_version + 1)
 
-# which virtual NGINX branch builds on which git branch
-nginx_branches = {
-    "stable": "master",
-    "mainline": "mainline",
-    "plesk": "plesk",
-    # spec is always equal to stable (with mod conditionals), but we only push those modules which need unique version
-    # due to SSL requirements, etc.
-    # nginx-mod for modules only needed for e.g. EL7 where we built against non-system OpenSSL, but not in EL8, etc.
-    "nginx-mod": "nginx-mod",
-    "angie": "angie",
-}
+nginx_branches = distros_config["collections"]["nginx"]["branches"]
 
 # for standard RPM spec repo
 config = {"workflows": {}}
@@ -168,7 +158,9 @@ for distro_name, distro_config in distros.items():
             dist, "aarch64"
         )
 
-        for nginx_branch, git_branch in nginx_branches.items():
+        # for nginx_branch, git_branch in nginx_branches.items():
+        for nginx_branch, branch_config in nginx_branches.items():
+            git_branch = branch_config.get("git_branch", nginx_branch)
             if git_branch == "plesk":
                 if "has_plesk" not in distro_config or not distro_config["has_plesk"]:
                     continue
