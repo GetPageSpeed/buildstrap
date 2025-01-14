@@ -537,6 +537,224 @@ workflows:
           branches: {only: tengine}
         name: deploy-amzn2023-tengine-x86_64
         requires: [build-amzn2023-tengine-x86_64]
+  build-deploy-el10-angie-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: angie}
+        name: build-el10-angie-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: angie}
+        name: deploy-el10-angie-aarch64
+        requires: [build-el10-angie-aarch64]
+  build-deploy-el10-angie-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: angie}
+        name: build-el10-angie-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: angie}
+        name: deploy-el10-angie-x86_64
+        requires: [build-el10-angie-x86_64]
+  build-deploy-el10-freenginx-mainline-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-mainline}
+        name: build-el10-freenginx-mainline-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-mainline}
+        name: deploy-el10-freenginx-mainline-aarch64
+        requires: [build-el10-freenginx-mainline-aarch64]
+  build-deploy-el10-freenginx-mainline-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-mainline}
+        name: build-el10-freenginx-mainline-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-mainline}
+        name: deploy-el10-freenginx-mainline-x86_64
+        requires: [build-el10-freenginx-mainline-x86_64]
+  build-deploy-el10-freenginx-stable-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-stable}
+        name: build-el10-freenginx-stable-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-stable}
+        name: deploy-el10-freenginx-stable-aarch64
+        requires: [build-el10-freenginx-stable-aarch64]
+  build-deploy-el10-freenginx-stable-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-stable}
+        name: build-el10-freenginx-stable-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: freenginx-stable}
+        name: deploy-el10-freenginx-stable-x86_64
+        requires: [build-el10-freenginx-stable-x86_64]
+  build-deploy-el10-mainline-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-el10-mainline-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: mainline}
+        name: deploy-el10-mainline-aarch64
+        requires: [build-el10-mainline-aarch64]
+  build-deploy-el10-mainline-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-el10-mainline-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: mainline}
+        name: deploy-el10-mainline-x86_64
+        requires: [build-el10-mainline-x86_64]
+  build-deploy-el10-plesk-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        enable_repos: getpagespeed-extras-plesk
+        filters:
+          branches: {only: plesk}
+        name: build-el10-plesk-x86_64
+        plesk: 18
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: plesk}
+        name: deploy-el10-plesk-x86_64
+        requires: [build-el10-plesk-x86_64]
+  build-deploy-el10-stable-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: master}
+        name: build-el10-stable-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: master}
+        name: deploy-el10-stable-aarch64
+        requires: [build-el10-stable-aarch64]
+  build-deploy-el10-stable-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: master}
+        name: build-el10-stable-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: master}
+        name: deploy-el10-stable-x86_64
+        requires: [build-el10-stable-x86_64]
+  build-deploy-el10-tengine-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: tengine}
+        name: build-el10-tengine-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: tengine}
+        name: deploy-el10-tengine-aarch64
+        requires: [build-el10-tengine-aarch64]
+  build-deploy-el10-tengine-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: tengine}
+        name: build-el10-tengine-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: el10
+        filters:
+          branches: {only: tengine}
+        name: deploy-el10-tengine-x86_64
+        requires: [build-el10-tengine-x86_64]
   build-deploy-el7-angie-aarch64:
     jobs:
     - build:

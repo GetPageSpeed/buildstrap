@@ -32,6 +32,7 @@ distros:
       - 7
       - 8
       - 9
+      - 10
     # Override settings for specific versions
     version_overrides:
       7:
