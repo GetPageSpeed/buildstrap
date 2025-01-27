@@ -158,12 +158,16 @@ for distro_name, distro_config in distros.items():
             dist, "aarch64"
         )
 
+        version_override_config = distro_config.get("version_overrides", {}).get(v, {})
+        has_plesk = version_override_config.get(
+            "has_plesk", distro_config.get("has_plesk", False)
+        )
+
         # for nginx_branch, git_branch in nginx_branches.items():
         for nginx_branch, branch_config in nginx_branches.items():
             git_branch = branch_config.get("git_branch", nginx_branch)
-            if git_branch == "plesk":
-                if "has_plesk" not in distro_config or not distro_config["has_plesk"]:
-                    continue
+            if git_branch == "plesk" and not has_plesk:
+                continue
             if git_branch == "nginx-mod" and dist != "el7":
                 continue
 

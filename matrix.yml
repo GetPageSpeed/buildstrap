@@ -39,6 +39,8 @@ distros:
         # The setting to specify docker image to use for this distro version
         docker: centos
         packager: yum
+      10:
+        has_plesk: False
   fedora:
     dist: fc
     dir: fedora
