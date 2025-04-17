@@ -28,6 +28,7 @@ for distro, distro_config in distros.items():
     if "versions_check" in distro_config and not distro_config["versions_check"]:
         continue
     distro_version = lastversion.latest(distro).release[0]
+    print(f"Latest version for {distro} is {distro_version}")
     # print(f"{distro}'s latest major version is {distro_version}")
     # array of OS releases, of course we build against the current version always:
     distros[distro]["versions"] = [distro_version]
