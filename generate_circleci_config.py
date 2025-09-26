@@ -38,6 +38,7 @@ default_archs = ["x86_64", "aarch64"]
 
 # Get architectures from settings.yml or default to the default_archs
 archs = project_settings.get("archs", default_archs)
+exclude_patterns = project_settings.get("exclude", [])
 # if there is only one .spec file in the directory, look for "BuildArch:      noarch" in it
 # if found, set only "noarch" to the list of archs
 if len([f for f in os.listdir(project_dir) if f.endswith(".spec")]) == 1:
@@ -382,12 +383,10 @@ for distro_name, distro_info in distros.items():
                         continue
                 # check if this distro and arch has been excluded
                 # exclude: config can either have exclude: el or el7 or exclude: el7-x86_64 items
-                if dist in project_settings.get("exclude", []):
-                    continue
-                if f"{dist}{version}" in project_settings.get("exclude", []):
-                    continue
-                if f"{dist}{version}-{arch}" in project_settings.get("exclude", []):
-                    continue
+                # check excludes with wildcard support (e.g., "*", "el*", "amzn*-aarch64")
+                combo_values = [dist, f"{dist}{version}", f"{dist}{version}-{arch}"]
+                if any(fnmatch.fnmatch(value, pattern) for value in combo_values for pattern in exclude_patterns):
+                    continue    
                 workflow_name = get_workflow_name(dist, version, branch, arch)
                 build_job_name = get_build_job_name(dist, version, branch, arch)
                 deploy_job_name = get_deploy_job_name(dist, version, branch, arch)
