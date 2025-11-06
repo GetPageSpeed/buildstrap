@@ -6,11 +6,11 @@ declare -A dists=(
   ["el8"]="redhat/8"
   ["el9"]="redhat/9"
   ["el10"]="redhat/10"
+  ["fc43"]="fedora/43"
   ["fc42"]="fedora/42"
-  ["fc41"]="fedora/41"
   ["amzn2"]="amzn/2"
   ["amzn2023"]="amzn/2023"
-  ["sles15"]="sles/15"
+  ["sles16"]="sles/16"
 )
 # mapping of directories to full descriptive names:
 declare -A os_long=(
