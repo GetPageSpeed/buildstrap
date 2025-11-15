@@ -1,5 +1,7 @@
 # buildstrap
 
+> See central hub for the end‑to‑end build system: `builder-scripts/docs/system-overview.md`
+
 Bootstrap generation of CircleCI config.yml for RPM builds of the latest OS releases.
 Creates `generated_config.yml` that builds and deploys RPM against supported OS versions.
 
