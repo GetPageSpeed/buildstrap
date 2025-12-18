@@ -83,6 +83,11 @@ jobs:
           command: |
             [[ ! -f ./cleanup.sh ]] || BRANCH="${CIRCLE_BRANCH}" ./cleanup.sh
       - run:
+          name: "Update build script from GitHub (until images are rebuilt)"
+          command: |
+            curl -sS -o /usr/local/bin/build https://raw.githubusercontent.com/GetPageSpeed/rpmbuilder/master/assets/build
+            chmod +x /usr/local/bin/build
+      - run:
           name: "Run the build itself: this will do rpmlint and check RPMs existence among other things."
           command: build
       - run:
