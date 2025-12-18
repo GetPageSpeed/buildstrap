@@ -177,10 +177,9 @@ for distro_name, distro_config in distros.items():
             if git_branch == "nginx-mod" and dist != "el7":
                 continue
 
-            # Check only_dists filter (dist without version, e.g. "el", "fc", "amzn")
-            dist_base = distro_config.get("dist", distro_name)
+            # Check only_dists filter - match full dist (e.g. "el9") or base (e.g. "el*")
             if "only_dists" in branch_config:
-                if not any(fnmatch.fnmatch(dist_base, pattern) for pattern in branch_config["only_dists"]):
+                if not any(fnmatch.fnmatch(dist, pattern) for pattern in branch_config["only_dists"]):
                     continue
 
             # Check only_archs for x86_64
