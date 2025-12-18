@@ -575,6 +575,7 @@ workflows:
     - build:
         context: org-global
         dist: el10
+        enable_repos: cloudlinux-ea4
         filters:
           branches: {only: cl-ea4}
         name: build-el10-cl-ea4-x86_64
@@ -791,6 +792,7 @@ workflows:
     - build:
         context: org-global
         dist: el7
+        enable_repos: cloudlinux-ea4
         filters:
           branches: {only: cl-ea4}
         name: build-el7-cl-ea4-x86_64
@@ -1042,6 +1044,7 @@ workflows:
     - build:
         context: org-global
         dist: el8
+        enable_repos: cloudlinux-ea4
         filters:
           branches: {only: cl-ea4}
         name: build-el8-cl-ea4-x86_64
@@ -1258,6 +1261,7 @@ workflows:
     - build:
         context: org-global
         dist: el9
+        enable_repos: cloudlinux-ea4
         filters:
           branches: {only: cl-ea4}
         name: build-el9-cl-ea4-x86_64
