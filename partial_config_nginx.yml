@@ -29,6 +29,9 @@ executors:
       enable_repos:
         type: string
         default: ""
+      failure_tolerance:
+        type: string
+        default: "0.1"
     docker:
       - image: getpagespeed/rpmbuilder:<< parameters.dist >>
     working_directory: /sources
@@ -37,6 +40,7 @@ executors:
       PLESK: << parameters.plesk >>
       MOD: << parameters.mod >>
       ENABLE_REPOS: << parameters.enable_repos >>
+      FAILURE_TOLERANCE: << parameters.failure_tolerance >>
 jobs:
   build:
     parameters:
@@ -53,6 +57,9 @@ jobs:
       enable_repos:
         type: string
         default: ""
+      failure_tolerance:
+        type: string
+        default: "0.1"
       resource_class:
         description: "The resource class to use for the build"
         type: string
@@ -64,6 +71,7 @@ jobs:
       plesk: << parameters.plesk >>
       mod: << parameters.mod >>
       enable_repos: << parameters.enable_repos >>
+      failure_tolerance: << parameters.failure_tolerance >>
     steps:
       - checkout
       - run:

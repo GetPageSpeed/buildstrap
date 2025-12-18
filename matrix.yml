@@ -111,7 +111,10 @@ collections:
         description: "CloudLinux EA4"
         git_branch: cl-ea4
         only_dists:
-          - "el*"  # CloudLinux EA4 is RHEL-family only
+          - "el7"
+          - "el8"
+          - "el9"
+          # el10 excluded: CloudLinux EA4 doesn't publish packages for it yet
         only_archs:
           - x86_64
         # CloudLinux EA4 repo for ea-nginx-ngxdev

@@ -138,6 +138,7 @@ def get_nginx_workflow(dist, git_branch, nginx_branch, arch):
 
     if git_branch == "cl-ea4":
         workflow["jobs"][0]["build"]["enable_repos"] = "cloudlinux-ea4"
+        workflow["jobs"][0]["build"]["failure_tolerance"] = "0.2"  # 20% tolerance for EA4
 
     # if we are building for aarch64, we need to specify resource_class for the build job
     if arch == "aarch64":

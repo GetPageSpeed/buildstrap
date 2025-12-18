@@ -29,6 +29,9 @@ executors:
       enable_repos:
         type: string
         default: ""
+      failure_tolerance:
+        type: string
+        default: "0.1"
     docker:
       - image: getpagespeed/rpmbuilder:<< parameters.dist >>
     working_directory: /sources
@@ -37,6 +40,7 @@ executors:
       PLESK: << parameters.plesk >>
       MOD: << parameters.mod >>
       ENABLE_REPOS: << parameters.enable_repos >>
+      FAILURE_TOLERANCE: << parameters.failure_tolerance >>
 jobs:
   build:
     parameters:
@@ -53,6 +57,9 @@ jobs:
       enable_repos:
         type: string
         default: ""
+      failure_tolerance:
+        type: string
+        default: "0.1"
       resource_class:
         description: "The resource class to use for the build"
         type: string
@@ -64,6 +71,7 @@ jobs:
       plesk: << parameters.plesk >>
       mod: << parameters.mod >>
       enable_repos: << parameters.enable_repos >>
+      failure_tolerance: << parameters.failure_tolerance >>
     steps:
       - checkout
       - run:
@@ -575,23 +583,6 @@ workflows:
           branches: {only: angie}
         name: deploy-el10-angie-x86_64
         requires: [build-el10-angie-x86_64]
-  build-deploy-el10-cl-ea4-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el10
-        enable_repos: cloudlinux-ea4
-        filters:
-          branches: {only: cl-ea4}
-        name: build-el10-cl-ea4-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el10
-        filters:
-          branches: {only: cl-ea4}
-        name: deploy-el10-cl-ea4-x86_64
-        requires: [build-el10-cl-ea4-x86_64]
   build-deploy-el10-freenginx-mainline-aarch64:
     jobs:
     - build:
@@ -792,23 +783,6 @@ workflows:
           branches: {only: angie}
         name: deploy-el7-angie-x86_64
         requires: [build-el7-angie-x86_64]
-  build-deploy-el7-cl-ea4-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el7
-        enable_repos: cloudlinux-ea4
-        filters:
-          branches: {only: cl-ea4}
-        name: build-el7-cl-ea4-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: cl-ea4}
-        name: deploy-el7-cl-ea4-x86_64
-        requires: [build-el7-cl-ea4-x86_64]
   build-deploy-el7-freenginx-mainline-aarch64:
     jobs:
     - build:
@@ -1062,23 +1036,6 @@ workflows:
           branches: {only: angie}
         name: deploy-el8-angie-x86_64
         requires: [build-el8-angie-x86_64]
-  build-deploy-el8-cl-ea4-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el8
-        enable_repos: cloudlinux-ea4
-        filters:
-          branches: {only: cl-ea4}
-        name: build-el8-cl-ea4-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: cl-ea4}
-        name: deploy-el8-cl-ea4-x86_64
-        requires: [build-el8-cl-ea4-x86_64]
   build-deploy-el8-freenginx-mainline-aarch64:
     jobs:
     - build:
@@ -1297,23 +1254,6 @@ workflows:
           branches: {only: angie}
         name: deploy-el9-angie-x86_64
         requires: [build-el9-angie-x86_64]
-  build-deploy-el9-cl-ea4-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el9
-        enable_repos: cloudlinux-ea4
-        filters:
-          branches: {only: cl-ea4}
-        name: build-el9-cl-ea4-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: cl-ea4}
-        name: deploy-el9-cl-ea4-x86_64
-        requires: [build-el9-cl-ea4-x86_64]
   build-deploy-el9-freenginx-mainline-aarch64:
     jobs:
     - build:
