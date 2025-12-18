@@ -4,6 +4,7 @@ Fetch the latest release number for each OS and populate "releases" key in matri
 with current and previous release numbers (building for last two major)
 """
 import copy
+import fnmatch
 import shutil
 import stat
 import json
@@ -172,25 +173,47 @@ for distro_name, distro_config in distros.items():
             if git_branch == "nginx-mod" and dist != "el7":
                 continue
 
-            config_nginx["workflows"][f"build-deploy-{dist}-{nginx_branch}-x86-64"] = (
-                get_nginx_workflow(dist, git_branch, nginx_branch, "x86_64")
-            )
+            # Check only_dists filter (dist without version, e.g. "el", "fc", "amzn")
+            dist_base = distro_config.get("dist", distro_name)
+            if "only_dists" in branch_config:
+                if not any(fnmatch.fnmatch(dist_base, pattern) for pattern in branch_config["only_dists"]):
+                    continue
 
-            if git_branch != "plesk":
-                # add aarch64 build for all branches except plesk
+            # Check only_archs for x86_64
+            x86_allowed = True
+            if "only_archs" in branch_config:
+                x86_allowed = any(fnmatch.fnmatch("x86_64", pattern) for pattern in branch_config["only_archs"])
+
+            # Check only_archs for aarch64
+            aarch64_allowed = True
+            if "only_archs" in branch_config:
+                aarch64_allowed = any(fnmatch.fnmatch("aarch64", pattern) for pattern in branch_config["only_archs"])
+
+            if x86_allowed:
+                config_nginx["workflows"][f"build-deploy-{dist}-{nginx_branch}-x86-64"] = (
+                    get_nginx_workflow(dist, git_branch, nginx_branch, "x86_64")
+                )
+
+            if git_branch != "plesk" and aarch64_allowed:
+                # add aarch64 build for all branches except plesk (and if allowed by only_archs)
                 config_nginx["workflows"][
                     f"build-deploy-{dist}-{nginx_branch}-aarch64"
                 ] = get_nginx_workflow(dist, git_branch, nginx_branch, "aarch64")
-                config_nginx_without_plesk["workflows"][
-                    f"build-deploy-{dist}-{nginx_branch}-x86-64"
-                ] = config_nginx["workflows"][
-                    f"build-deploy-{dist}-{nginx_branch}-x86-64"
-                ].copy()
-                config_nginx_without_plesk["workflows"][
-                    f"build-deploy-{dist}-{nginx_branch}-aarch64"
-                ] = config_nginx["workflows"][
-                    f"build-deploy-{dist}-{nginx_branch}-aarch64"
-                ].copy()
+
+            # config_nginx_without_plesk: copy workflows if they exist
+            if git_branch != "plesk":
+                if x86_allowed and f"build-deploy-{dist}-{nginx_branch}-x86-64" in config_nginx["workflows"]:
+                    config_nginx_without_plesk["workflows"][
+                        f"build-deploy-{dist}-{nginx_branch}-x86-64"
+                    ] = config_nginx["workflows"][
+                        f"build-deploy-{dist}-{nginx_branch}-x86-64"
+                    ].copy()
+                if aarch64_allowed and f"build-deploy-{dist}-{nginx_branch}-aarch64" in config_nginx["workflows"]:
+                    config_nginx_without_plesk["workflows"][
+                        f"build-deploy-{dist}-{nginx_branch}-aarch64"
+                    ] = config_nginx["workflows"][
+                        f"build-deploy-{dist}-{nginx_branch}-aarch64"
+                    ].copy()
 
         config_self["workflows"][f"build-deploy-{dist}-x86_64"] = get_workflow(
             dist, "x86_64", tags_only=True
