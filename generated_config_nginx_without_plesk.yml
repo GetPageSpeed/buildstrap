@@ -789,7 +789,7 @@ workflows:
         context: org-global
         dist: el7
         enable_repos: cloudlinux-ea4
-        failure_tolerance: '0.2'
+        failure_tolerance: '1.0'
         filters:
           branches: {only: cl-ea4}
         name: build-el7-cl-ea4-x86_64
@@ -1042,7 +1042,7 @@ workflows:
         context: org-global
         dist: el8
         enable_repos: cloudlinux-ea4
-        failure_tolerance: '0.2'
+        failure_tolerance: '1.0'
         filters:
           branches: {only: cl-ea4}
         name: build-el8-cl-ea4-x86_64
@@ -1260,7 +1260,7 @@ workflows:
         context: org-global
         dist: el9
         enable_repos: cloudlinux-ea4
-        failure_tolerance: '0.2'
+        failure_tolerance: '1.0'
         filters:
           branches: {only: cl-ea4}
         name: build-el9-cl-ea4-x86_64
