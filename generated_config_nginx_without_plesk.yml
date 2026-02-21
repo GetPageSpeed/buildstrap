@@ -783,7 +783,7 @@ workflows:
           branches: {only: angie}
         name: deploy-el7-angie-x86_64
         requires: [build-el7-angie-x86_64]
-  build-deploy-el7-cl-ea4-x86-64:
+  build-deploy-el7-ea4-x86-64:
     jobs:
     - build:
         context: org-global
@@ -791,16 +791,16 @@ workflows:
         enable_repos: cloudlinux-ea4
         failure_tolerance: '1.0'
         filters:
-          branches: {only: cl-ea4}
-        name: build-el7-cl-ea4-x86_64
+          branches: {only: ea4}
+        name: build-el7-ea4-x86_64
     - deploy:
         arch: x86_64
         context: org-global
         dist: el7
         filters:
-          branches: {only: cl-ea4}
-        name: deploy-el7-cl-ea4-x86_64
-        requires: [build-el7-cl-ea4-x86_64]
+          branches: {only: ea4}
+        name: deploy-el7-ea4-x86_64
+        requires: [build-el7-ea4-x86_64]
   build-deploy-el7-freenginx-mainline-aarch64:
     jobs:
     - build:
@@ -1036,7 +1036,7 @@ workflows:
           branches: {only: angie}
         name: deploy-el8-angie-x86_64
         requires: [build-el8-angie-x86_64]
-  build-deploy-el8-cl-ea4-x86-64:
+  build-deploy-el8-ea4-x86-64:
     jobs:
     - build:
         context: org-global
@@ -1044,16 +1044,16 @@ workflows:
         enable_repos: cloudlinux-ea4
         failure_tolerance: '1.0'
         filters:
-          branches: {only: cl-ea4}
-        name: build-el8-cl-ea4-x86_64
+          branches: {only: ea4}
+        name: build-el8-ea4-x86_64
     - deploy:
         arch: x86_64
         context: org-global
         dist: el8
         filters:
-          branches: {only: cl-ea4}
-        name: deploy-el8-cl-ea4-x86_64
-        requires: [build-el8-cl-ea4-x86_64]
+          branches: {only: ea4}
+        name: deploy-el8-ea4-x86_64
+        requires: [build-el8-ea4-x86_64]
   build-deploy-el8-freenginx-mainline-aarch64:
     jobs:
     - build:
@@ -1254,7 +1254,7 @@ workflows:
           branches: {only: angie}
         name: deploy-el9-angie-x86_64
         requires: [build-el9-angie-x86_64]
-  build-deploy-el9-cl-ea4-x86-64:
+  build-deploy-el9-ea4-x86-64:
     jobs:
     - build:
         context: org-global
@@ -1262,16 +1262,16 @@ workflows:
         enable_repos: cloudlinux-ea4
         failure_tolerance: '1.0'
         filters:
-          branches: {only: cl-ea4}
-        name: build-el9-cl-ea4-x86_64
+          branches: {only: ea4}
+        name: build-el9-ea4-x86_64
     - deploy:
         arch: x86_64
         context: org-global
         dist: el9
         filters:
-          branches: {only: cl-ea4}
-        name: deploy-el9-cl-ea4-x86_64
-        requires: [build-el9-cl-ea4-x86_64]
+          branches: {only: ea4}
+        name: deploy-el9-ea4-x86_64
+        requires: [build-el9-ea4-x86_64]
   build-deploy-el9-freenginx-mainline-aarch64:
     jobs:
     - build:

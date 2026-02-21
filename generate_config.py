@@ -136,7 +136,7 @@ def get_nginx_workflow(dist, git_branch, nginx_branch, arch):
         workflow["jobs"][0]["build"]["plesk"] = 18
         workflow["jobs"][0]["build"]["enable_repos"] = "getpagespeed-extras-plesk"
 
-    if git_branch == "cl-ea4":
+    if git_branch == "ea4":
         workflow["jobs"][0]["build"]["enable_repos"] = "cloudlinux-ea4"
         workflow["jobs"][0]["build"]["failure_tolerance"] = "1.0"  # 100% tolerance while debugging
 

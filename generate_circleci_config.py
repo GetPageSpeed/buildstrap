@@ -410,7 +410,7 @@ for distro_name, distro_info in distros.items():
                 # enabling the repo at build time ensures existence check for already built RPMs
                 if collection_name == "nginx" and branch != "stable":
                     # CloudLinux EA4 builds use the CloudLinux repo directly
-                    if branch == "cl-ea4":
+                    if branch == "ea4":
                         build_job["build"]["enable_repos"] = "cloudlinux-ea4"
                     else:
                         build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
