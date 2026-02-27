@@ -137,7 +137,7 @@ def get_nginx_workflow(dist, git_branch, nginx_branch, arch):
         workflow["jobs"][0]["build"]["enable_repos"] = "getpagespeed-extras-plesk"
 
     if git_branch == "ea4":
-        workflow["jobs"][0]["build"]["enable_repos"] = "cloudlinux-ea4"
+        workflow["jobs"][0]["build"]["enable_repos"] = "getpagespeed-extras-ea4"
         workflow["jobs"][0]["build"]["failure_tolerance"] = "1.0"  # 100% tolerance while debugging
 
     # if we are building for aarch64, we need to specify resource_class for the build job
