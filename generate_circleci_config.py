@@ -366,7 +366,7 @@ for distro_name, distro_info in distros.items():
 
             if "only_dists" in branch_config:
                 if not any(
-                    fnmatch.fnmatch(dist, pattern)
+                    fnmatch.fnmatch(f"{dist}{version}", pattern)
                     for pattern in branch_config["only_dists"]
                 ):
                     continue
