@@ -783,24 +783,6 @@ workflows:
           branches: {only: angie}
         name: deploy-el7-angie-x86_64
         requires: [build-el7-angie-x86_64]
-  build-deploy-el7-ea4-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el7
-        enable_repos: cloudlinux-ea4
-        failure_tolerance: '1.0'
-        filters:
-          branches: {only: ea4}
-        name: build-el7-ea4-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: ea4}
-        name: deploy-el7-ea4-x86_64
-        requires: [build-el7-ea4-x86_64]
   build-deploy-el7-freenginx-mainline-aarch64:
     jobs:
     - build:
@@ -1059,7 +1041,7 @@ workflows:
     - build:
         context: org-global
         dist: el8
-        enable_repos: cloudlinux-ea4
+        enable_repos: getpagespeed-extras-ea4
         failure_tolerance: '1.0'
         filters:
           branches: {only: ea4}
@@ -1295,7 +1277,7 @@ workflows:
     - build:
         context: org-global
         dist: el9
-        enable_repos: cloudlinux-ea4
+        enable_repos: getpagespeed-extras-ea4
         failure_tolerance: '1.0'
         filters:
           branches: {only: ea4}
