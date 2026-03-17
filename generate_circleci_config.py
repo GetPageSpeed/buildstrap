@@ -191,6 +191,11 @@ build_steps += [
         }
     },
     {
+        "store_test_results": {
+            "path": "/output/test-results",
+        }
+    },
+    {
         "run": {
             "name": "Check for RPM files and halt if none exist",
             "command": command_check_rpm_files_halt,
