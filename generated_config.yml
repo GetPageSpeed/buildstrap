@@ -72,18 +72,6 @@ jobs:
       dist: << parameters.dist >>
       arch: << parameters.arch >>
     steps:
-      - run:
-          name: "Halt deploy for non-release branches (prevents leaks into ~/incoming/<project>/<dist>/<arch>/<branch>/)"
-          command: |
-            case "$CIRCLE_BRANCH" in
-              master|main|mainline|plesk|tengine|nginx-mod|nginx-quic|angie|varnish60|freenginx-stable|freenginx-mainline|ea4)
-                echo "Branch '$CIRCLE_BRANCH' is a recognized deploy target"
-                ;;
-              *)
-                echo "Branch '$CIRCLE_BRANCH' is not a recognized deploy target; halting to prevent leak into base repo (whitelist mirrors server-side NON_BASE_BRANCH_NAMES in incoming-*.sh plus master/main)"
-                circleci-agent step halt
-                ;;
-            esac
       - attach_workspace:
           at: /output
       - add_ssh_keys:
