@@ -188,6 +188,7 @@ build_steps += [
         "run": {
             "name": "Run the build itself: this will do rpmlint and check RPMs existence among other things.",
             "command": "build",
+            "no_output_timeout": "30m",
         }
     },
     {
