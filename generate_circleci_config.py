@@ -397,10 +397,15 @@ for distro_name, distro_info in distros.items():
                 build_job_name = get_build_job_name(dist, version, branch, arch)
                 deploy_job_name = get_deploy_job_name(dist, version, branch, arch)
 
-                only_branches = [branch]
-                # if branch is "master", add "main" as well
+                # The branch filter and `git_branch` mapping in matrix.json are
+                # not always the same (e.g. nginx "stable" → master, varnish
+                # "varnish60" → master). Filter on the actual git branch name.
+                git_branch = branch_config.get("git_branch", branch)
+                only_branches = [git_branch]
+                # if git branch is "master", "main", or "stable", treat them
+                # as interchangeable so the workflow fires from any of them.
                 main_branches = ["main", "master", "stable"]
-                if branch in main_branches:
+                if git_branch in main_branches:
                     only_branches = main_branches
 
                 # Build job parameters
@@ -412,13 +417,16 @@ for distro_name, distro_info in distros.items():
                         "filters": {"branches": {"only": only_branches}},
                     }
                 }
-                # add enable_repos parameter for nginx collection
-                # enabling the repo at build time ensures existence check for already built RPMs
+                # Set enable_repos so check_packages_in_repo (in rpmbuilder image)
+                # can see prior builds in the channel where the artifact lives,
+                # and short-circuit re-builds of an already-published NVR.
                 if collection_name == "nginx" and branch != "stable":
                     if branch == "ea4":
                         build_job["build"]["enable_repos"] = "getpagespeed-extras-ea4"
                     else:
                         build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
+                elif collection_name == "varnish":
+                    build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
 
                 # Add extra parameters for 'aarch64'
                 if arch == "aarch64":

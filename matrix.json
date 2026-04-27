@@ -133,7 +133,8 @@
         "varnish": {
             "branches": {
                 "varnish60": {
-                    "description": "Varnish 6.0 LTS"
+                    "description": "Varnish 6.0 LTS",
+                    "git_branch": "master"
                 }
             }
         }
