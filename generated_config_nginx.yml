@@ -1493,206 +1493,6 @@ workflows:
           branches: {only: tengine}
         name: deploy-el9-tengine-x86_64
         requires: [build-el9-tengine-x86_64]
-  build-deploy-fc42-angie-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: angie}
-        name: build-fc42-angie-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: angie}
-        name: deploy-fc42-angie-aarch64
-        requires: [build-fc42-angie-aarch64]
-  build-deploy-fc42-angie-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: angie}
-        name: build-fc42-angie-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: angie}
-        name: deploy-fc42-angie-x86_64
-        requires: [build-fc42-angie-x86_64]
-  build-deploy-fc42-freenginx-mainline-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-mainline}
-        name: build-fc42-freenginx-mainline-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-mainline}
-        name: deploy-fc42-freenginx-mainline-aarch64
-        requires: [build-fc42-freenginx-mainline-aarch64]
-  build-deploy-fc42-freenginx-mainline-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-mainline}
-        name: build-fc42-freenginx-mainline-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-mainline}
-        name: deploy-fc42-freenginx-mainline-x86_64
-        requires: [build-fc42-freenginx-mainline-x86_64]
-  build-deploy-fc42-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-fc42-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-fc42-freenginx-stable-aarch64
-        requires: [build-fc42-freenginx-stable-aarch64]
-  build-deploy-fc42-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-fc42-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-fc42-freenginx-stable-x86_64
-        requires: [build-fc42-freenginx-stable-x86_64]
-  build-deploy-fc42-mainline-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        enable_repos: getpagespeed-extras-mainline
-        filters:
-          branches: {only: mainline}
-        name: build-fc42-mainline-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: mainline}
-        name: deploy-fc42-mainline-aarch64
-        requires: [build-fc42-mainline-aarch64]
-  build-deploy-fc42-mainline-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        enable_repos: getpagespeed-extras-mainline
-        filters:
-          branches: {only: mainline}
-        name: build-fc42-mainline-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: mainline}
-        name: deploy-fc42-mainline-x86_64
-        requires: [build-fc42-mainline-x86_64]
-  build-deploy-fc42-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: master}
-        name: build-fc42-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: master}
-        name: deploy-fc42-stable-aarch64
-        requires: [build-fc42-stable-aarch64]
-  build-deploy-fc42-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: master}
-        name: build-fc42-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: master}
-        name: deploy-fc42-stable-x86_64
-        requires: [build-fc42-stable-x86_64]
-  build-deploy-fc42-tengine-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: tengine}
-        name: build-fc42-tengine-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: tengine}
-        name: deploy-fc42-tengine-aarch64
-        requires: [build-fc42-tengine-aarch64]
-  build-deploy-fc42-tengine-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: tengine}
-        name: build-fc42-tengine-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc42
-        filters:
-          branches: {only: tengine}
-        name: deploy-fc42-tengine-x86_64
-        requires: [build-fc42-tengine-x86_64]
   build-deploy-fc43-angie-aarch64:
     jobs:
     - build:
@@ -1893,6 +1693,206 @@ workflows:
           branches: {only: tengine}
         name: deploy-fc43-tengine-x86_64
         requires: [build-fc43-tengine-x86_64]
+  build-deploy-fc44-angie-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: angie}
+        name: build-fc44-angie-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: angie}
+        name: deploy-fc44-angie-aarch64
+        requires: [build-fc44-angie-aarch64]
+  build-deploy-fc44-angie-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: angie}
+        name: build-fc44-angie-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: angie}
+        name: deploy-fc44-angie-x86_64
+        requires: [build-fc44-angie-x86_64]
+  build-deploy-fc44-freenginx-mainline-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-mainline}
+        name: build-fc44-freenginx-mainline-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-mainline}
+        name: deploy-fc44-freenginx-mainline-aarch64
+        requires: [build-fc44-freenginx-mainline-aarch64]
+  build-deploy-fc44-freenginx-mainline-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-mainline}
+        name: build-fc44-freenginx-mainline-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-mainline}
+        name: deploy-fc44-freenginx-mainline-x86_64
+        requires: [build-fc44-freenginx-mainline-x86_64]
+  build-deploy-fc44-freenginx-stable-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-stable}
+        name: build-fc44-freenginx-stable-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-stable}
+        name: deploy-fc44-freenginx-stable-aarch64
+        requires: [build-fc44-freenginx-stable-aarch64]
+  build-deploy-fc44-freenginx-stable-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-stable}
+        name: build-fc44-freenginx-stable-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: freenginx-stable}
+        name: deploy-fc44-freenginx-stable-x86_64
+        requires: [build-fc44-freenginx-stable-x86_64]
+  build-deploy-fc44-mainline-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-fc44-mainline-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc44-mainline-aarch64
+        requires: [build-fc44-mainline-aarch64]
+  build-deploy-fc44-mainline-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        enable_repos: getpagespeed-extras-mainline
+        filters:
+          branches: {only: mainline}
+        name: build-fc44-mainline-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: mainline}
+        name: deploy-fc44-mainline-x86_64
+        requires: [build-fc44-mainline-x86_64]
+  build-deploy-fc44-stable-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: master}
+        name: build-fc44-stable-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: master}
+        name: deploy-fc44-stable-aarch64
+        requires: [build-fc44-stable-aarch64]
+  build-deploy-fc44-stable-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: master}
+        name: build-fc44-stable-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: master}
+        name: deploy-fc44-stable-x86_64
+        requires: [build-fc44-stable-x86_64]
+  build-deploy-fc44-tengine-aarch64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: tengine}
+        name: build-fc44-tengine-aarch64
+        resource_class: arm.medium
+    - deploy:
+        arch: aarch64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: tengine}
+        name: deploy-fc44-tengine-aarch64
+        requires: [build-fc44-tengine-aarch64]
+  build-deploy-fc44-tengine-x86-64:
+    jobs:
+    - build:
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: tengine}
+        name: build-fc44-tengine-x86_64
+    - deploy:
+        arch: x86_64
+        context: org-global
+        dist: fc44
+        filters:
+          branches: {only: tengine}
+        name: deploy-fc44-tengine-x86_64
+        requires: [build-fc44-tengine-x86_64]
   build-deploy-sles16-angie-aarch64:
     jobs:
     - build:
