@@ -426,6 +426,14 @@ for distro_name, distro_info in distros.items():
                     for pattern in branch_config["only_dists"]
                 ):
                     continue
+            # Per-branch resource_class overrides (opt-in, default-off).
+            # Apply to the BUILD job only — smoke keeps its current hard-coded
+            # medium/arm.medium so this contributes zero diff to consumers that
+            # do not set these keys. When unset, branch_config.get returns
+            # None and the existing emit path is preserved exactly.
+            branch_rc = branch_config.get("resource_class")           # x86_64 build override
+            branch_arm_rc = branch_config.get("arm_resource_class")   # aarch64 build override
+
             for arch in archs:
                 # Skip architectures that are not supported
                 if arch == "aarch64" and not distro_info.get("has_aarch64", True):
@@ -480,7 +488,12 @@ for distro_name, distro_info in distros.items():
 
                 # Add extra parameters for 'aarch64'
                 if arch == "aarch64":
-                    build_job["build"]["resource_class"] = arm_resource_class
+                    build_job["build"]["resource_class"] = branch_arm_rc or arm_resource_class
+                elif branch_rc and branch_rc != resource_class:
+                    # x86_64 normally inherits via the job parameter default;
+                    # only emit an inline override when the branch differs
+                    # from project-wide. Keeps non-opting branches byte-identical.
+                    build_job["build"]["resource_class"] = branch_rc
 
                 deploy_job = {
                     "deploy": {
