@@ -116,6 +116,17 @@ arm_resource_class = "arm." + arm_resource_class_mappings.get(
     resource_class, resource_class
 )
 
+# Opt-in post-deploy smoke install jobs. Shape (per-project settings.yml):
+#   post_deploy_smoke:
+#     <branch>:
+#       dists: [el9, ...]
+#       archs: [x86_64, aarch64]
+# Absent / empty → no smoke jobs emitted (default-off; consumers not opting in
+# regenerate a byte-identical .circleci/config.yml). Smoke body lives in the
+# consumer repo at scripts/smoke.sh; the generated job just `checkout`s and
+# runs that script under the rpmbuilder executor.
+post_deploy_smoke = project_settings.get("post_deploy_smoke") or {}
+
 command_set_nginx_macros = LiteralScalarString(
     r"""[ -z ${PLESK+x} ] || echo "%plesk ${PLESK}" >> rpmmacros
 # we generate both nginx-module-<foo> and sw-nginx-module-<foo> from a single spec file, so:
@@ -329,6 +340,46 @@ circleci_config = {
     "workflows": {},
 }
 
+# Opt-in smoke job template. Only emitted into `jobs:` when the project's
+# settings.yml carries a non-empty `post_deploy_smoke:` block. Keeps
+# non-opting consumers' generated config byte-identical.
+if post_deploy_smoke:
+    circleci_config["jobs"]["smoke"] = {
+        "parameters": {
+            "dist": {
+                "description": "The dist tag of OS to smoke-install on",
+                "type": "string",
+            },
+            "arch": {
+                "description": "Architecture (informational; surfaces in job name)",
+                "type": "string",
+            },
+            "resource_class": {
+                "description": "Resource class for the smoke runner",
+                "type": "string",
+                "default": "medium",
+            },
+        },
+        "resource_class": "<< parameters.resource_class >>",
+        "executor": {
+            "name": "rpmbuilder",
+            "dist": "<< parameters.dist >>",
+        },
+        "environment": {
+            "DISTRO": "<< parameters.dist >>",
+            "ARCH": "<< parameters.arch >>",
+        },
+        "steps": [
+            "checkout",
+            {
+                "run": {
+                    "name": "Post-deploy install smoke + crash probe",
+                    "command": "bash scripts/smoke.sh",
+                }
+            },
+        ],
+    }
+
 # Prepare workflows
 workflows = {}
 
@@ -448,6 +499,40 @@ for distro_name, distro_info in distros.items():
 
                 # Construct the workflow
                 workflows[workflow_name] = {"jobs": [build_job, deploy_job]}
+
+                # Opt-in post-deploy smoke job. Default-off: if the project's
+                # settings.yml has no post_deploy_smoke block, nothing is
+                # appended and the workflow stays byte-identical for that
+                # consumer. When opted in for this (branch, dist, arch), chain
+                # a smoke job after deploy so it pulls the just-published RPM
+                # from the channel and exercises a real install + crash probe
+                # (see consumer-repo scripts/smoke.sh for the body).
+                smoke_for_branch = post_deploy_smoke.get(branch)
+                if smoke_for_branch:
+                    smoke_dists = smoke_for_branch.get("dists", [])
+                    smoke_archs = smoke_for_branch.get("archs", [])
+                    if f"{dist}{version}" in smoke_dists and arch in smoke_archs:
+                        if len(branches) == 1:
+                            smoke_job_name = f"smoke-{dist}{version}-{arch}"
+                        else:
+                            smoke_job_name = (
+                                f"smoke-{dist}{version}-{branch}-{arch}"
+                            )
+                        smoke_rc = (
+                            arm_resource_class if arch == "aarch64" else "medium"
+                        )
+                        smoke_job = {
+                            "smoke": {
+                                "name": smoke_job_name,
+                                "context": "org-global",
+                                "dist": f"{dist}{version}",
+                                "arch": arch,
+                                "resource_class": smoke_rc,
+                                "filters": {"branches": {"only": only_branches}},
+                                "requires": [deploy_job_name],
+                            }
+                        }
+                        workflows[workflow_name]["jobs"].append(smoke_job)
 
 # Add the generated workflows to the CircleCI config
 circleci_config["workflows"].update(workflows)
