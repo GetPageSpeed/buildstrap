@@ -478,12 +478,10 @@ for distro_name, distro_info in distros.items():
                 # Set enable_repos so check_packages_in_repo (in rpmbuilder image)
                 # can see prior builds in the channel where the artifact lives,
                 # and short-circuit re-builds of an already-published NVR.
-                if collection_name == "nginx" and branch != "stable":
-                    if branch == "ea4":
-                        build_job["build"]["enable_repos"] = "getpagespeed-extras-ea4"
-                    else:
-                        build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
-                elif collection_name == "varnish":
+                # Convention: matrix.yml `collections.<X>.branches.<Y>` key is
+                # both the sub-channel suffix and (unless `git_branch:` overrides)
+                # the git branch name. "stable" is the canonical no-sub-channel case.
+                if collection_name and branch != "stable":
                     build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
 
                 # Add extra parameters for 'aarch64'
