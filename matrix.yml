@@ -124,3 +124,11 @@ collections:
     branches:
       varnish60:
         description: "Varnish 6.0 LTS"
+  corecare:
+    branches:
+      corecare:
+        description: "CoreCare maintained LTS Linux kernel for EL7"
+        only_dists:
+          - "el7"
+        only_archs:
+          - x86_64
