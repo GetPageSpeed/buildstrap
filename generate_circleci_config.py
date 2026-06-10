@@ -41,7 +41,10 @@ archs = project_settings.get("archs", default_archs)
 exclude_patterns = project_settings.get("exclude", [])
 # if there is only one .spec file in the directory, look for "BuildArch:      noarch" in it
 # if found, set only "noarch" to the list of archs
-if len([f for f in os.listdir(project_dir) if f.endswith(".spec")]) == 1:
+# An explicit `archs:` in settings.yml wins over spec sniffing.
+if "archs" not in project_settings and len(
+    [f for f in os.listdir(project_dir) if f.endswith(".spec")]
+) == 1:
     spec_file = os.path.join(
         project_dir, [f for f in os.listdir(project_dir) if f.endswith(".spec")][0]
     )
@@ -62,7 +65,13 @@ if len([f for f in os.listdir(project_dir) if f.endswith(".spec")]) == 1:
             if line.startswith("ExclusiveArch:"):
                 exclusive_archs = line.split(":", maxsplit=1)[1].strip()
                 exclusive_archs = exclusive_archs.split(" ")
-                archs = exclusive_archs
+                # Specs may list RPM macros (%{arm}, %{?go_arches:...}) or
+                # arches we don't build for (i686). Keep only CI-buildable
+                # arches; if nothing survives (pure-macro list), keep the
+                # default matrix.
+                sanitized = [a for a in exclusive_archs if a in default_archs]
+                if sanitized:
+                    archs = sanitized
                 break
 exclude_archs = project_settings.get("exclude_archs", [])
 
