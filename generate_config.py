@@ -225,40 +225,25 @@ for distro_name, distro_config in distros.items():
             dist, "aarch64", tags_only=True
         )
 
-# copy this raw yml to preserve formatting
-shutil.copy("partial_config.yml", "generated_config.yml")
-with open("generated_config.yml", "a") as f:
-    yaml.dump(config, f, default_flow_style=None)
-
-# the same for branch-based NGINX builds
+# Verbatim CI-config templates are retired in favor of the settings.yml-driven
+# generate_circleci_config.py (single CI-config writer — see builder-scripts
+# audits/2026-06-10-ci-config-writer-flipflop.md). Only two template shapes the
+# per-project generator cannot emit yet are still produced:
+#   - generated_config_nginx.yml: nginx-module-security +
+#     nginx-module-stream-lua-rpm (live plesk/nginx-mod branches need the
+#     plesk:18 / mod:1 job params)
+#   - generated_config_self.yml: tag-triggered release builds (ngm, fds,
+#     stack-scripts)
+# generated_config.yml, generated_config_nginx_without_plesk.yml and
+# generated_config_specs_only.yml are gone; their consumers were migrated to
+# per-project settings.yml + generate_circleci_config.py.
 shutil.copy("partial_config_nginx.yml", "generated_config_nginx.yml")
 with open("generated_config_nginx.yml", "a") as f:
     yaml.dump(config_nginx, f, default_flow_style=None)
 
-# the same for branch-based NGINX builds where Plesk already ships its own module
-shutil.copy("partial_config_nginx.yml", "generated_config_nginx_without_plesk.yml")
-with open("generated_config_nginx_without_plesk.yml", "a") as f:
-    yaml.dump(config_nginx_without_plesk, f, default_flow_style=None)
-
 shutil.copy("partial_config_self.yml", "generated_config_self.yml")
 with open("generated_config_self.yml", "a") as f:
     yaml.dump(config_self, f, default_flow_style=None)
-
-# write generated_config_self_only_specs which will have filters for every job, on specs branch
-shutil.copy("partial_config.yml", "generated_config_specs_only.yml")
-# set filters on branch to "specs" for every job
-config_specs_only = copy.deepcopy(config)
-for workflow in config_specs_only["workflows"]:
-    for entry in config_specs_only["workflows"][workflow]["jobs"]:
-        job_name = list(entry.keys())[0]
-        job = entry[job_name]
-        if "filters" not in job:
-            job["filters"] = {}
-        if "branches" not in job["filters"]:
-            job["filters"]["branches"] = {}
-        job["filters"]["branches"]["only"] = "specs"
-with open("generated_config_specs_only.yml", "a") as f:
-    yaml.dump(config_specs_only, f, default_flow_style=None)
 
 # write helper bash arrays for shell scripts
 # declare -A dists=(
