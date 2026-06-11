@@ -167,6 +167,7 @@ command_incoming_mkdir = FoldedScalarString(
 )
 
 command_deploy_all_rpms = FoldedScalarString(
+    "echo \"[deploy-diag] pwd=$(pwd)\"; ls -la *.rpm 2>&1 || echo '[deploy-diag] NO_RPM_MATCH in current dir'; "
     "scp -o StrictHostKeyChecking=no -v -r *.rpm "
     "$GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/"
 )
