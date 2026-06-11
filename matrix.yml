@@ -118,8 +118,15 @@ collections:
           - x86_64
       freenginx-stable:
         description: "FreeNGINX Stable"
+        # No client-side repo id exists for this channel in
+        # getpagespeed-extras-release — suppress enable_repos emission.
+        enable_repos: null
       freenginx-mainline:
         description: "FreeNGINX Mainline"
+        # Ships as [getpagespeed-freenginx-mainline] in getpagespeed-extras.repo —
+        # the one channel whose repo id predates the getpagespeed-extras-<branch>
+        # convention. dnf config-manager hard-fails on the conventional id.
+        enable_repos: getpagespeed-freenginx-mainline
   varnish:
     branches:
       varnish60:

@@ -490,8 +490,15 @@ for distro_name, distro_info in distros.items():
                 # Convention: matrix.yml `collections.<X>.branches.<Y>` key is
                 # both the sub-channel suffix and (unless `git_branch:` overrides)
                 # the git branch name. "stable" is the canonical no-sub-channel case.
+                # A branch may carry `enable_repos:` to override the conventional
+                # repo id (e.g. freenginx-mainline ships as
+                # [getpagespeed-freenginx-mainline]); null suppresses emission.
                 if collection_name and branch != "stable":
-                    build_job["build"]["enable_repos"] = f"getpagespeed-extras-{branch}"
+                    enable_repos = branch_config.get(
+                        "enable_repos", f"getpagespeed-extras-{branch}"
+                    )
+                    if enable_repos:
+                        build_job["build"]["enable_repos"] = enable_repos
 
                 # Add extra parameters for 'aarch64'
                 if arch == "aarch64":
