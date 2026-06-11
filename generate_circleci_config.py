@@ -167,12 +167,12 @@ command_incoming_mkdir = FoldedScalarString(
 )
 
 command_deploy_all_rpms = FoldedScalarString(
-    "scp -o StrictHostKeyChecking=no -q -r *.rpm "
+    "scp -o StrictHostKeyChecking=no -v -r *.rpm "
     "$GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/"
 )
 
 command_trigger_incoming_hook = FoldedScalarString(
-    "ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER"
+    "ssh -o StrictHostKeyChecking=no -v $GPS_BUILD_USER@$GPS_BUILD_SERVER"
     ' "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${ARCH}/${CIRCLE_BRANCH}/process.log 2>&1&"'
 )
 
