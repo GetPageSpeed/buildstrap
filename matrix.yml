@@ -21,6 +21,10 @@ distros:
     # e.g. having crypt-keeper.sh use logic based on distro settings here
     rpmbuilder_name: centos
     description: "CentOS/RHEL"
+    # human_label: friendly product name shown to end users in the
+    # extras.getpagespeed.com setup wizard. Distinct from `description`,
+    # which is consumed by CI/build tooling.
+    human_label: "AlmaLinux / Rocky / RHEL"
     has_plesk: True
     # The setting to specify docker image to use for this distro
     docker: rockylinux
@@ -45,6 +49,7 @@ distros:
     dist: fc
     dir: fedora
     description: "Fedora Linux"
+    human_label: "Fedora"
     # Rawhide has too many issues and requires sponsoring due to workload and stability issues that needs to be addressed all the time
     # For example: Error: Path "/root/rpmbuild/BUILDROOT/hello-1.0-1.fc41.x86_64" is outside of $RPM_BUILD_ROOT
     # Go figure! So we disable builds on Rawhide for now
@@ -53,6 +58,7 @@ distros:
   amazonlinux:
     dist: amzn
     description: "Amazon Linux"
+    human_label: "Amazon Linux"
     versions_check: false
     versions:
       - 2
@@ -64,6 +70,8 @@ distros:
   sles:
     dist: sles
     description: "SUSE Linux Enterprise"
+    # Our SLES build artifacts install cleanly on openSUSE Leap too — surface both in the wizard.
+    human_label: "SLES / openSUSE Leap"
     os_versions: 1
     docker: opensuse/leap
     rpmbuilder_name: opensuse
@@ -116,11 +124,9 @@ collections:
           - "el9"
         only_archs:
           - x86_64
-      freenginx-stable:
-        description: "FreeNGINX Stable"
-        # No client-side repo id exists for this channel in
-        # getpagespeed-extras-release — suppress enable_repos emission.
-        enable_repos: null
+      # freenginx-stable removed 2026-06-12 — we don't build it.
+      # If you ever add it back, also wire a getpagespeed-extras-release
+      # repo id (the stable channel never had one).
       freenginx-mainline:
         description: "FreeNGINX Mainline"
         # Ships as [getpagespeed-freenginx-mainline] in getpagespeed-extras.repo —

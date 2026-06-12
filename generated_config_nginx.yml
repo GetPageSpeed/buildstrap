@@ -219,39 +219,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-amzn2-freenginx-mainline-x86_64
         requires: [build-amzn2-freenginx-mainline-x86_64]
-  build-deploy-amzn2-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-amzn2-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-amzn2-freenginx-stable-aarch64
-        requires: [build-amzn2-freenginx-stable-aarch64]
-  build-deploy-amzn2-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-amzn2-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: amzn2
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-amzn2-freenginx-stable-x86_64
-        requires: [build-amzn2-freenginx-stable-x86_64]
   build-deploy-amzn2-mainline-aarch64:
     jobs:
     - build:
@@ -419,39 +386,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-amzn2023-freenginx-mainline-x86_64
         requires: [build-amzn2023-freenginx-mainline-x86_64]
-  build-deploy-amzn2023-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-amzn2023-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-amzn2023-freenginx-stable-aarch64
-        requires: [build-amzn2023-freenginx-stable-aarch64]
-  build-deploy-amzn2023-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-amzn2023-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: amzn2023
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-amzn2023-freenginx-stable-x86_64
-        requires: [build-amzn2023-freenginx-stable-x86_64]
   build-deploy-amzn2023-mainline-aarch64:
     jobs:
     - build:
@@ -619,39 +553,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-el10-freenginx-mainline-x86_64
         requires: [build-el10-freenginx-mainline-x86_64]
-  build-deploy-el10-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el10
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el10-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: el10
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el10-freenginx-stable-aarch64
-        requires: [build-el10-freenginx-stable-aarch64]
-  build-deploy-el10-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el10
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el10-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el10
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el10-freenginx-stable-x86_64
-        requires: [build-el10-freenginx-stable-x86_64]
   build-deploy-el10-mainline-aarch64:
     jobs:
     - build:
@@ -837,39 +738,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-el7-freenginx-mainline-x86_64
         requires: [build-el7-freenginx-mainline-x86_64]
-  build-deploy-el7-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el7-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el7-freenginx-stable-aarch64
-        requires: [build-el7-freenginx-stable-aarch64]
-  build-deploy-el7-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el7-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el7
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el7-freenginx-stable-x86_64
-        requires: [build-el7-freenginx-stable-x86_64]
   build-deploy-el7-mainline-aarch64:
     jobs:
     - build:
@@ -1108,39 +976,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-el8-freenginx-mainline-x86_64
         requires: [build-el8-freenginx-mainline-x86_64]
-  build-deploy-el8-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el8-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el8-freenginx-stable-aarch64
-        requires: [build-el8-freenginx-stable-aarch64]
-  build-deploy-el8-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el8-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el8
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el8-freenginx-stable-x86_64
-        requires: [build-el8-freenginx-stable-x86_64]
   build-deploy-el8-mainline-aarch64:
     jobs:
     - build:
@@ -1344,39 +1179,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-el9-freenginx-mainline-x86_64
         requires: [build-el9-freenginx-mainline-x86_64]
-  build-deploy-el9-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el9-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el9-freenginx-stable-aarch64
-        requires: [build-el9-freenginx-stable-aarch64]
-  build-deploy-el9-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-el9-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: el9
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-el9-freenginx-stable-x86_64
-        requires: [build-el9-freenginx-stable-x86_64]
   build-deploy-el9-mainline-aarch64:
     jobs:
     - build:
@@ -1562,39 +1364,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-fc43-freenginx-mainline-x86_64
         requires: [build-fc43-freenginx-mainline-x86_64]
-  build-deploy-fc43-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc43
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-fc43-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc43
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-fc43-freenginx-stable-aarch64
-        requires: [build-fc43-freenginx-stable-aarch64]
-  build-deploy-fc43-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc43
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-fc43-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc43
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-fc43-freenginx-stable-x86_64
-        requires: [build-fc43-freenginx-stable-x86_64]
   build-deploy-fc43-mainline-aarch64:
     jobs:
     - build:
@@ -1762,39 +1531,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-fc44-freenginx-mainline-x86_64
         requires: [build-fc44-freenginx-mainline-x86_64]
-  build-deploy-fc44-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc44
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-fc44-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: fc44
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-fc44-freenginx-stable-aarch64
-        requires: [build-fc44-freenginx-stable-aarch64]
-  build-deploy-fc44-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: fc44
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-fc44-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: fc44
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-fc44-freenginx-stable-x86_64
-        requires: [build-fc44-freenginx-stable-x86_64]
   build-deploy-fc44-mainline-aarch64:
     jobs:
     - build:
@@ -1962,39 +1698,6 @@ workflows:
           branches: {only: freenginx-mainline}
         name: deploy-sles16-freenginx-mainline-x86_64
         requires: [build-sles16-freenginx-mainline-x86_64]
-  build-deploy-sles16-freenginx-stable-aarch64:
-    jobs:
-    - build:
-        context: org-global
-        dist: sles16
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-sles16-freenginx-stable-aarch64
-        resource_class: arm.medium
-    - deploy:
-        arch: aarch64
-        context: org-global
-        dist: sles16
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-sles16-freenginx-stable-aarch64
-        requires: [build-sles16-freenginx-stable-aarch64]
-  build-deploy-sles16-freenginx-stable-x86-64:
-    jobs:
-    - build:
-        context: org-global
-        dist: sles16
-        filters:
-          branches: {only: freenginx-stable}
-        name: build-sles16-freenginx-stable-x86_64
-    - deploy:
-        arch: x86_64
-        context: org-global
-        dist: sles16
-        filters:
-          branches: {only: freenginx-stable}
-        name: deploy-sles16-freenginx-stable-x86_64
-        requires: [build-sles16-freenginx-stable-x86_64]
   build-deploy-sles16-mainline-aarch64:
     jobs:
     - build:
