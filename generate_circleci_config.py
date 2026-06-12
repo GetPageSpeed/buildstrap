@@ -39,6 +39,17 @@ default_archs = ["x86_64", "aarch64"]
 # Get architectures from settings.yml or default to the default_archs
 archs = project_settings.get("archs", default_archs)
 exclude_patterns = project_settings.get("exclude", [])
+
+# Self mode: tag-triggered release builds (ngm, fds, stack-scripts).
+# Replaces the verbatim generated_config_self.yml template — single boolean
+# `self: true` in settings.yml flips the generator to:
+#   - no collection / no branch-axis (per-distro × per-arch × single workflow)
+#   - build command `./utils/version-from-tag.sh && build`
+#   - tag filters (build: /.*/, deploy: /^v.*/ branches ignored)
+#   - small resource_class default
+#   - no enable_repos / no nginx-collection plumbing
+# Any settings.yml knob (e.g. explicit `archs:`) still wins.
+self_mode = bool(project_settings.get("self", False))
 # if there is only one .spec file in the directory, look for "BuildArch:      noarch" in it
 # if found, set only "noarch" to the list of archs
 # An explicit `archs:` in settings.yml wins over spec sniffing.
@@ -85,36 +96,49 @@ with open(matrix_file, "r") as f:
 
 # Get the branches from matrix.json "collections": { "nginx": { "branches": {
 # what branches depends on detected collection, e.g. "nginx"
-branches = {
-    "master": {
-        "description": "Main release branch",
-    }
-}
-collection_name = None
-# if project diredtory nqme starts with "nginx-", set collection_name to "nginx"
-# get base name of the directory
-project_dir_base = os.path.basename(project_dir)
-if project_dir_base.startswith("nginx-"):
-    collection_name = "nginx"
-# settings can specify collection name explicitly
-collection_name = project_settings.get("collection", collection_name)
-if collection_name:
-    branches = matrix_config["collections"][collection_name]["branches"]
-# project can override branches or specify 'all'
-branches = project_settings.get("branches", branches)
-# project can explicitly specify a set of branches to reduce, using branch:
-# then filter out branches that are not in the list
-if "branch" in project_settings:
-    branches = {k: v for k, v in branches.items() if k in project_settings["branch"]}
-# project can exclude branches, e.g. plesk, by specifying exclude_branches:
-if "exclude_branches" in project_settings:
+if self_mode:
+    # Tag-triggered: no branch axis. Sentinel single-branch keeps the existing
+    # distros × branches × archs loop intact while emitting workflow names
+    # without a branch suffix (per get_workflow_name's len(branches) == 1
+    # short-circuit). collection_name forced None so nginx-only blocks below
+    # (custom setup steps, plesk/mod/failure_tolerance params, enable_repos
+    # default) all stay dormant.
+    branches = {"__self__": {"description": "tag-triggered self build"}}
+    collection_name = None
+else:
     branches = {
-        k: v
-        for k, v in branches.items()
-        if k not in project_settings["exclude_branches"]
+        "master": {
+            "description": "Main release branch",
+        }
     }
+    collection_name = None
+    # if project diredtory nqme starts with "nginx-", set collection_name to "nginx"
+    # get base name of the directory
+    project_dir_base = os.path.basename(project_dir)
+    if project_dir_base.startswith("nginx-"):
+        collection_name = "nginx"
+    # settings can specify collection name explicitly
+    collection_name = project_settings.get("collection", collection_name)
+    if collection_name:
+        branches = matrix_config["collections"][collection_name]["branches"]
+    # project can override branches or specify 'all'
+    branches = project_settings.get("branches", branches)
+    # project can explicitly specify a set of branches to reduce, using branch:
+    # then filter out branches that are not in the list
+    if "branch" in project_settings:
+        branches = {k: v for k, v in branches.items() if k in project_settings["branch"]}
+    # project can exclude branches, e.g. plesk, by specifying exclude_branches:
+    if "exclude_branches" in project_settings:
+        branches = {
+            k: v
+            for k, v in branches.items()
+            if k not in project_settings["exclude_branches"]
+        }
 
 resource_class = "medium"
+# Self mode default is small (verbatim template parity).
+if self_mode:
+    resource_class = "small"
 # if only noarch, fine with small
 if len(archs) == 1 and "noarch" in archs:
     resource_class = "small"
@@ -207,14 +231,21 @@ build_steps += [
     {
         "run": {
             "name": "Run the build itself: this will do rpmlint and check RPMs existence among other things.",
-            "command": "build",
+            "command": "./utils/version-from-tag.sh && build" if self_mode else "build",
         }
     },
-    {
-        "store_test_results": {
-            "path": "/output/test-results",
-        }
-    },
+]
+# Self mode skips store_test_results — verbatim template parity (no JUnit XML
+# expected for single-spec tag-triggered builds).
+if not self_mode:
+    build_steps += [
+        {
+            "store_test_results": {
+                "path": "/output/test-results",
+            }
+        },
+    ]
+build_steps += [
     {
         "run": {
             "name": "Check for RPM files and halt if none exist",
@@ -229,7 +260,6 @@ build_job_parameters = {
         "description": "The dist tag of OS to build for",
         "type": "string",
     },
-    "enable_repos": {"type": "string", "default": ""},
     "resource_class": {
         "description": "The resource class to use for the build",
         "type": "string",
@@ -240,19 +270,25 @@ build_job_parameters = {
 build_job_executor_parameters = {
     "name": "rpmbuilder",
     "dist": "<< parameters.dist >>",
-    "enable_repos": "<< parameters.enable_repos >>",
 }
 
 rpmbuilder_executor_parameters = {
     "dist": {"type": "string"},
     "rpmlint": {"type": "integer", "default": 1},
-    "enable_repos": {"type": "string", "default": ""},
 }
 
 rpmbuilder_executor_environment = {
     "RPMLINT": "<< parameters.rpmlint >>",
-    "ENABLE_REPOS": "<< parameters.enable_repos >>",
 }
+
+# Self mode omits enable_repos entirely (verbatim template parity); non-self
+# repos always wire the standard enable_repos param/executor/env trio so that
+# the existing per-branch overrides + check_packages_in_repo short-circuit work.
+if not self_mode:
+    build_job_parameters["enable_repos"] = {"type": "string", "default": ""}
+    build_job_executor_parameters["enable_repos"] = "<< parameters.enable_repos >>"
+    rpmbuilder_executor_parameters["enable_repos"] = {"type": "string", "default": ""}
+    rpmbuilder_executor_environment["ENABLE_REPOS"] = "<< parameters.enable_repos >>"
 
 if collection_name == "nginx":
     build_job_parameters["plesk"] = {
@@ -265,12 +301,20 @@ if collection_name == "nginx":
         "type": "integer",
         "default": 0,
     }
+    build_job_parameters["failure_tolerance"] = {
+        "description": "Per-build failure tolerance fraction passed to rpmbuilder (e.g. '1.0' for ea4 to keep going through known-broken specs).",
+        "type": "string",
+        "default": "0.1",
+    }
     build_job_executor_parameters["plesk"] = "<< parameters.plesk >>"
     build_job_executor_parameters["mod"] = "<< parameters.mod >>"
+    build_job_executor_parameters["failure_tolerance"] = "<< parameters.failure_tolerance >>"
     rpmbuilder_executor_parameters["plesk"] = {"type": "integer", "default": 0}
     rpmbuilder_executor_parameters["mod"] = {"type": "integer", "default": 0}
+    rpmbuilder_executor_parameters["failure_tolerance"] = {"type": "string", "default": "0.1"}
     rpmbuilder_executor_environment["PLESK"] = "<< parameters.plesk >>"
     rpmbuilder_executor_environment["MOD"] = "<< parameters.mod >>"
+    rpmbuilder_executor_environment["FAILURE_TOLERANCE"] = "<< parameters.failure_tolerance >>"
 
 
 circleci_config = {
@@ -424,8 +468,27 @@ for distro_name, distro_info in distros.items():
     dist = distro_info.get("dist", distro_name)
     versions = distro_info.get("versions", [])
     for version in versions:
+        # Per-version distro overrides — primarily the plesk branch axis:
+        # matrix.yml's rhel.version_overrides.10.has_plesk=False excludes
+        # el10-plesk workflows even though el10 ∈ only_dists: ["el*"].
+        # matrix.json stores version_overrides keys as strings (e.g. "10")
+        # since JSON has no integer keys; matrix.yml versions arrive as ints.
+        # Look up by both for safety.
+        version_overrides_all = distro_info.get("version_overrides", {})
+        version_overrides = (
+            version_overrides_all.get(version)
+            or version_overrides_all.get(str(version))
+            or {}
+        )
+        has_plesk = version_overrides.get(
+            "has_plesk", distro_info.get("has_plesk", False)
+        )
         for branch in branches:
             branch_config = branches[branch]
+            # Skip plesk branch on distro versions that don't support Plesk
+            # (e.g. el10). Mirrors generate_config.py:175 logic.
+            if branch_config.get("git_branch", branch) == "plesk" and not has_plesk:
+                continue
             # if only_dists list is present in branch_config, compare each element as wildcard "*" against current dist
             # and if matches, skip this distro
 
@@ -500,6 +563,18 @@ for distro_name, distro_info in distros.items():
                     if enable_repos:
                         build_job["build"]["enable_repos"] = enable_repos
 
+                # nginx collection: per-branch job-param overrides from matrix.json.
+                # plesk_version → `plesk: <ver>` (verbatim parity for the plesk branch).
+                # failure_tolerance → `failure_tolerance: '<frac>'` (e.g. ea4 = '1.0').
+                # `mod` intentionally not surfaced per-job: nginx-mod cohort retired
+                # (ABI-compatible with stable); standalone variant repos inherit
+                # the executor default 0 via param wiring above.
+                if collection_name == "nginx":
+                    if "plesk_version" in branch_config:
+                        build_job["build"]["plesk"] = branch_config["plesk_version"]
+                    if "failure_tolerance" in branch_config:
+                        build_job["build"]["failure_tolerance"] = branch_config["failure_tolerance"]
+
                 # Add extra parameters for 'aarch64'
                 if arch == "aarch64":
                     build_job["build"]["resource_class"] = branch_arm_rc or arm_resource_class
@@ -523,6 +598,17 @@ for distro_name, distro_info in distros.items():
                 # if branch is "master", add "main" as well
                 if branch == "master":
                     deploy_job["deploy"]["filters"]["branches"]["only"].append("main")
+
+                # Self mode replaces branch-based filters with tag-based ones:
+                # build fires for any tag, deploy only for /^v.*/ tags and never
+                # for plain branch pushes. Verbatim parity with the retired
+                # generated_config_self.yml template.
+                if self_mode:
+                    build_job["build"]["filters"] = {"tags": {"only": "/.*/"}}
+                    deploy_job["deploy"]["filters"] = {
+                        "branches": {"ignore": "/.*/"},
+                        "tags": {"only": "/^v.*/"},
+                    }
 
                 # Construct the workflow
                 workflows[workflow_name] = {"jobs": [build_job, deploy_job]}

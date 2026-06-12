@@ -118,6 +118,9 @@ collections:
       ea4:
         description: "EA4"
         git_branch: ea4
+        # ea4 now covers stock cPanel EA4 too (originally CL-only — the cl-ea4
+        # branch was retired 2026-06-12; nginx-modules cohort no longer carries it).
+        failure_tolerance: "1.0"
         only_dists:
           - "el7"
           - "el8"
