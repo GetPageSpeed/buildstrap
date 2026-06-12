@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
 """
 Fetch the latest release number for each OS and populate "releases" key in matrix.yml
-with current and previous release numbers (building for last two major)
+with current and previous release numbers (building for last two major).
+
+After polling lastversion, write out the load-bearing artifacts the rest of
+the build system consumes:
+  - buildstrap/matrix.json (and a copy in ../rpmbuilder/matrix.json) — the
+    canonical machine-readable matrix the per-project generator
+    (generate_circleci_config.py) reads.
+  - buildstrap/matrix.sh — bash array of dist → distro/version, sourced by
+    shell scripts (e.g. ~/scripts/upstream-check-and-build-all.sh).
+  - ../rpmbuilder/distro_versions.json and defaults — feed the rpmbuilder
+    image-build GitHub Action matrix.
+
+The old generated_config{,_nginx,_self,_specs_only,_nginx_without_plesk}.yml
+template writers retired 2026-06-12. Their consumers (~150 repos) all
+migrated to per-project settings.yml + generate_circleci_config.py.
 """
-import copy
-import fnmatch
-import shutil
 import stat
 import json
 
@@ -30,7 +41,6 @@ for distro, distro_config in distros.items():
         continue
     distro_version = lastversion.latest(distro).release[0]
     print(f"Latest version for {distro} is {distro_version}")
-    # print(f"{distro}'s latest major version is {distro_version}")
     # array of OS releases, of course we build against the current version always:
     distros[distro]["versions"] = [distro_version]
     # build against that many past releases of OS
@@ -44,206 +54,6 @@ for distro, distro_config in distros.items():
 
     if distro_config.get("include_rolling_release", False):
         distros[distro]["versions"].append(distro_version + 1)
-
-nginx_branches = distros_config["collections"]["nginx"]["branches"]
-
-# for standard RPM spec repo
-config = {"workflows": {}}
-
-# for nginx module RPM spec repo
-config_nginx = {"workflows": {}}
-
-# for nginx module RPM spec repo that is already built by Plesk itself
-config_nginx_without_plesk = {"workflows": {}}
-
-# for software source repo with the RPM spec file, e.g. fds
-config_self = {"workflows": {}}
-
-# build up extra yml fpr appending to partial_config.yml
-# we only construct workflows:
-
-
-def get_workflow(dist, arch, tags_only=False):
-    workflow = {
-        "jobs": [
-            {
-                "build": {
-                    "name": f"build-{dist}-{arch}",
-                    "dist": dist,
-                    "context": "org-global",
-                    # required since `deploy` has tag filters AND requires `build`
-                    "filters": {"tags": {"only": "/.*/"}},
-                }
-            },
-            {
-                "deploy": {
-                    "name": f"deploy-{dist}-{arch}",
-                    "dist": dist,
-                    "arch": arch,
-                    "context": "org-global",
-                    "requires": [f"build-{dist}-{arch}"],
-                    "filters": {
-                        "tags": {"only": "/^v.*/"},
-                        "branches": {"ignore": "/.*/"},
-                    },
-                }
-            },
-        ]
-    }
-    if not tags_only:
-        # remove the filters
-        workflow["jobs"][0]["build"].pop("filters")
-        workflow["jobs"][1]["deploy"].pop("filters")
-    # if we are building for aarch64, we need to specify resource_class for the build job
-    if arch == "aarch64":
-        workflow["jobs"][0]["build"]["resource_class"] = "arm.medium"
-    return workflow
-
-
-def get_nginx_workflow(dist, git_branch, nginx_branch, arch):
-    workflow = {
-        "jobs": [
-            {
-                "build": {
-                    "name": f"build-{dist}-{nginx_branch}-{arch}",
-                    "dist": dist,
-                    "context": "org-global",
-                    "filters": {"branches": {"only": git_branch}},
-                },
-            },
-            {
-                "deploy": {
-                    "name": f"deploy-{dist}-{nginx_branch}-{arch}",
-                    "dist": dist,
-                    "arch": arch,
-                    "context": "org-global",
-                    "requires": [
-                        f"build-{dist}-{nginx_branch}-{arch}",
-                    ],
-                    "filters": {"branches": {"only": git_branch}},
-                }
-            },
-        ]
-    }
-
-    if git_branch == "mainline":
-        workflow["jobs"][0]["build"]["enable_repos"] = "getpagespeed-extras-mainline"
-
-    if git_branch == "nginx-mod":
-        workflow["jobs"][0]["build"]["mod"] = 1
-
-    if git_branch == "plesk":
-        workflow["jobs"][0]["build"]["plesk"] = 18
-        workflow["jobs"][0]["build"]["enable_repos"] = "getpagespeed-extras-plesk"
-
-    if git_branch == "ea4":
-        workflow["jobs"][0]["build"]["enable_repos"] = "getpagespeed-extras-ea4"
-        workflow["jobs"][0]["build"]["failure_tolerance"] = "1.0"  # 100% tolerance while debugging
-
-    # if we are building for aarch64, we need to specify resource_class for the build job
-    if arch == "aarch64":
-        workflow["jobs"][0]["build"]["resource_class"] = "arm.medium"
-    return workflow
-
-
-for distro_name, distro_config in distros.items():
-    for v in distro_config["versions"]:
-        print(f"Generating {v} for {distro_name}")
-        dist = distro_name
-        if "dist" in distro_config:
-            dist = distro_config["dist"]
-        dist = dist + str(v)
-
-        distro_build_job_name = f"build-{dist}"
-        distro_deploy_job_name = f"deploy-{dist}"
-
-        config["workflows"][f"build-deploy-{dist}-x86_64"] = get_workflow(
-            dist, "x86_64"
-        )
-        config["workflows"][f"build-deploy-{dist}-aarch64"] = get_workflow(
-            dist, "aarch64"
-        )
-
-        version_override_config = distro_config.get("version_overrides", {}).get(v, {})
-        has_plesk = version_override_config.get(
-            "has_plesk", distro_config.get("has_plesk", False)
-        )
-
-        # for nginx_branch, git_branch in nginx_branches.items():
-        for nginx_branch, branch_config in nginx_branches.items():
-            git_branch = branch_config.get("git_branch", nginx_branch)
-            if git_branch == "plesk" and not has_plesk:
-                continue
-            if git_branch == "nginx-mod" and dist != "el7":
-                continue
-
-            # Check only_dists filter - match full dist (e.g. "el9") or base (e.g. "el*")
-            if "only_dists" in branch_config:
-                if not any(fnmatch.fnmatch(dist, pattern) for pattern in branch_config["only_dists"]):
-                    continue
-
-            # Check only_archs for x86_64
-            x86_allowed = True
-            if "only_archs" in branch_config:
-                x86_allowed = any(fnmatch.fnmatch("x86_64", pattern) for pattern in branch_config["only_archs"])
-
-            # Check only_archs for aarch64
-            aarch64_allowed = True
-            if "only_archs" in branch_config:
-                aarch64_allowed = any(fnmatch.fnmatch("aarch64", pattern) for pattern in branch_config["only_archs"])
-
-            if x86_allowed:
-                config_nginx["workflows"][f"build-deploy-{dist}-{nginx_branch}-x86-64"] = (
-                    get_nginx_workflow(dist, git_branch, nginx_branch, "x86_64")
-                )
-
-            if git_branch != "plesk" and aarch64_allowed:
-                # add aarch64 build for all branches except plesk (and if allowed by only_archs)
-                config_nginx["workflows"][
-                    f"build-deploy-{dist}-{nginx_branch}-aarch64"
-                ] = get_nginx_workflow(dist, git_branch, nginx_branch, "aarch64")
-
-            # config_nginx_without_plesk: copy workflows if they exist
-            if git_branch != "plesk":
-                if x86_allowed and f"build-deploy-{dist}-{nginx_branch}-x86-64" in config_nginx["workflows"]:
-                    config_nginx_without_plesk["workflows"][
-                        f"build-deploy-{dist}-{nginx_branch}-x86-64"
-                    ] = config_nginx["workflows"][
-                        f"build-deploy-{dist}-{nginx_branch}-x86-64"
-                    ].copy()
-                if aarch64_allowed and f"build-deploy-{dist}-{nginx_branch}-aarch64" in config_nginx["workflows"]:
-                    config_nginx_without_plesk["workflows"][
-                        f"build-deploy-{dist}-{nginx_branch}-aarch64"
-                    ] = config_nginx["workflows"][
-                        f"build-deploy-{dist}-{nginx_branch}-aarch64"
-                    ].copy()
-
-        config_self["workflows"][f"build-deploy-{dist}-x86_64"] = get_workflow(
-            dist, "x86_64", tags_only=True
-        )
-        config_self["workflows"][f"build-deploy-{dist}-aarch64"] = get_workflow(
-            dist, "aarch64", tags_only=True
-        )
-
-# Verbatim CI-config templates are retired in favor of the settings.yml-driven
-# generate_circleci_config.py (single CI-config writer — see builder-scripts
-# audits/2026-06-10-ci-config-writer-flipflop.md). Only two template shapes the
-# per-project generator cannot emit yet are still produced:
-#   - generated_config_nginx.yml: nginx-module-security +
-#     nginx-module-stream-lua-rpm (live plesk/nginx-mod branches need the
-#     plesk:18 / mod:1 job params)
-#   - generated_config_self.yml: tag-triggered release builds (ngm, fds,
-#     stack-scripts)
-# generated_config.yml, generated_config_nginx_without_plesk.yml and
-# generated_config_specs_only.yml are gone; their consumers were migrated to
-# per-project settings.yml + generate_circleci_config.py.
-shutil.copy("partial_config_nginx.yml", "generated_config_nginx.yml")
-with open("generated_config_nginx.yml", "a") as f:
-    yaml.dump(config_nginx, f, default_flow_style=None)
-
-shutil.copy("partial_config_self.yml", "generated_config_self.yml")
-with open("generated_config_self.yml", "a") as f:
-    yaml.dump(config_self, f, default_flow_style=None)
 
 # write helper bash arrays for shell scripts
 # declare -A dists=(

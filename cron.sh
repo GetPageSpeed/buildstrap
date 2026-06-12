@@ -10,7 +10,7 @@ git clean -fX >/dev/null
 git checkout main
 ./generate_config.py
 git add --all .
-git commit -m "Updated generated_config.yml"
+git commit -m "Updated matrix.json from lastversion poll [skip ci]"
 
 # push all branches
 git push --force --all origin
