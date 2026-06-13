@@ -39,6 +39,13 @@ default_archs = ["x86_64", "aarch64"]
 # Get architectures from settings.yml or default to the default_archs
 archs = project_settings.get("archs", default_archs)
 exclude_patterns = project_settings.get("exclude", [])
+# `dists:` is an allowlist (symmetric to `archs:`) over dist / dist-version /
+# dist-version-arch fnmatch patterns. Empty list / unset = no allowlist (build
+# everywhere except `exclude`). Use this when a repo is intrinsically scoped to
+# a subset of the matrix (e.g. libseccomp-rpm is el7-only because newer distros
+# already ship libseccomp >= 2.5.x); future new distros are excluded by default
+# instead of silently joining the build matrix.
+dists_allowlist = project_settings.get("dists", [])
 
 # Self mode: tag-triggered release builds (ngm, fds, stack-scripts).
 # Replaces the verbatim generated_config_self.yml template — single boolean
@@ -522,7 +529,15 @@ for distro_name, distro_info in distros.items():
                 # check excludes with wildcard support (e.g., "*", "el*", "amzn*-aarch64")
                 combo_values = [dist, f"{dist}{version}", f"{dist}{version}-{arch}"]
                 if any(fnmatch.fnmatch(value, pattern) for value in combo_values for pattern in exclude_patterns):
-                    continue    
+                    continue
+                # If a `dists:` allowlist is set, drop anything that doesn't match it.
+                if dists_allowlist and not any(
+                    fnmatch.fnmatch(value, pattern)
+                    for value in combo_values
+                    for pattern in dists_allowlist
+                ):
+                    continue
+
                 workflow_name = get_workflow_name(dist, version, branch, arch)
                 build_job_name = get_build_job_name(dist, version, branch, arch)
                 deploy_job_name = get_deploy_job_name(dist, version, branch, arch)
