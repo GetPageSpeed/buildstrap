@@ -120,7 +120,11 @@ collections:
         git_branch: ea4
         # ea4 now covers stock cPanel EA4 too (originally CL-only — the cl-ea4
         # branch was retired 2026-06-12; nginx-modules cohort no longer carries it).
-        failure_tolerance: "1.0"
+        # failure_tolerance lowered 1.0 -> 0.0 on 2026-06-20 after the cohort
+        # fix landed (yml2spec fdedddc/267e58f/52e70e7/cdb3d55 + nginx-extras
+        # 1362e0e) brought el7/el8/el9 ea4 cells from 21/16/15 failures to 0.
+        # myci build #99 (btgx3x0-544421) on SHA 1ccef90 verified 0 failures.
+        failure_tolerance: "0.0"
         only_dists:
           - "el7"
           - "el8"
