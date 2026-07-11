@@ -140,6 +140,16 @@ collections:
         # the one channel whose repo id predates the getpagespeed-extras-<branch>
         # convention. dnf config-manager hard-fails on the conventional id.
         enable_repos: getpagespeed-freenginx-mainline
+      edge:
+        description: "EDGE"
+        # GetPageSpeed EDGE — closed, Ultra-only edge server (package `edge`)
+        # built from the NGINX-MOD base in the edge-rpm repo. Gated channel
+        # getpagespeed-extras-edge (Ultra-only auth = extras paid.conf, added in
+        # Component B). RPM first: EL8/EL9/EL10, x86_64 + aarch64.
+        only_dists:
+          - "el8"
+          - "el9"
+          - "el10"
   varnish:
     branches:
       varnish60:
