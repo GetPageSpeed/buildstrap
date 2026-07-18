@@ -134,6 +134,7 @@
                 },
                 "edge": {
                     "description": "EDGE",
+                    "enable_repos": null,
                     "only_dists": [
                         "el8",
                         "el9",
