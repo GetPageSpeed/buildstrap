@@ -146,6 +146,17 @@ collections:
         # built from the NGINX-MOD base in the edge-rpm repo. Gated channel
         # getpagespeed-extras-edge (Ultra-only auth = extras paid.conf, added in
         # Component B). RPM first: EL8/EL9/EL10, x86_64 + aarch64.
+        #
+        # enable_repos suppressed (null): the getpagespeed-extras-edge channel
+        # repo is not yet defined in the rpmbuilder images (their baked
+        # getpagespeed-extras-release predates edge, and edge.repo is not wired
+        # into the release spec), so the conventional
+        # `dnf config-manager --set-enabled getpagespeed-extras-edge` hard-fails
+        # — same shape as the freenginx-mainline id mismatch above. Suppress
+        # until the images ship edge.repo. Trade-off: no check_packages_in_repo
+        # short-circuit for edge (acceptable — single package, only rebuilt on
+        # nginx bumps).
+        enable_repos:
         only_dists:
           - "el8"
           - "el9"
