@@ -74,6 +74,11 @@ configured_archs = project_settings.get("archs")
 noarch_build = configured_archs == ["noarch"]
 archs = normalize_archs(default_archs if configured_archs is None else configured_archs)
 exclude_patterns = project_settings.get("exclude", [])
+git_branch_override = project_settings.get("git_branch")
+if git_branch_override is not None:
+    if not isinstance(git_branch_override, str) or not git_branch_override.strip():
+        raise ValueError("settings.yml git_branch must be a non-empty string")
+    git_branch_override = git_branch_override.strip()
 # `dists:` is an allowlist (symmetric to `archs:`) over dist / dist-version /
 # dist-version-arch fnmatch patterns. Empty list / unset = no allowlist (build
 # everywhere except `exclude`). Use this when a repo is intrinsically scoped to
@@ -174,6 +179,10 @@ else:
             for k, v in branches.items()
             if k not in project_settings["exclude_branches"]
         }
+    if git_branch_override and len(branches) != 1:
+        raise ValueError(
+            "settings.yml git_branch requires exactly one selected collection branch"
+        )
 
 resource_class = "medium"
 # Self mode default is small (verbatim template parity).
@@ -591,7 +600,15 @@ for distro_name, distro_info in distros.items():
                 # The branch filter and `git_branch` mapping in matrix.json are
                 # not always the same (e.g. nginx "stable" → master, varnish
                 # "varnish60" → master). Filter on the actual git branch name.
-                git_branch = branch_config.get("git_branch", branch)
+                # A project may publish into a collection channel whose key is
+                # not its actual Git branch. Keep the collection key for
+                # workflow naming and enable_repos, but allow the project to
+                # override only the branch filter. This is deliberately valid
+                # for one selected collection branch, avoiding an ambiguous
+                # one-value-to-many-branches mapping.
+                git_branch = git_branch_override or branch_config.get(
+                    "git_branch", branch
+                )
                 only_branches = [git_branch]
                 # if git branch is "master", "main", or "stable", treat them
                 # as interchangeable so the workflow fires from any of them.

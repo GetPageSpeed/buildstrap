@@ -143,6 +143,26 @@ BuildArch: noarch
 
         self.assertEqual(config["workflows"], {})
 
+    def test_git_branch_override_preserves_collection_channel(self) -> None:
+        config = self.generate(
+            {"vmod.spec": ARCH_SPEC.format(name="vmod")},
+            settings=(
+                "collection: varnish\n"
+                "git_branch: master\n"
+                "resource_class: small\n"
+            ),
+        )
+
+        for workflow in config["workflows"].values():
+            build = next(job["build"] for job in workflow["jobs"] if "build" in job)
+            self.assertEqual(
+                build["filters"]["branches"]["only"],
+                ["main", "master", "stable"],
+            )
+            self.assertEqual(
+                build["enable_repos"], "getpagespeed-extras-varnish60"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

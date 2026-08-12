@@ -44,6 +44,18 @@ Mixed projects retain both x86_64 and aarch64 workflows. An explicit real
 `archs:` list in `settings.yml` overrides this detection. Legacy
 `archs: [noarch]` settings are accepted and normalized to x86_64.
 
+Collection members normally build from the Git branch named by their
+collection key. A project that publishes into one collection channel from a
+different branch can set `git_branch:` while retaining the collection key for
+workflow names and `enable_repos`. The override is accepted only when exactly
+one collection branch is selected, so it cannot ambiguously remap a
+multi-branch project:
+
+```yaml
+collection: varnish
+git_branch: master
+```
+
 ```bash
 cd /rpm/project/dir
 mkdir -p .circleci
