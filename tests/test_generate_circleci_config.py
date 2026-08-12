@@ -1,12 +1,11 @@
 """Regression tests for the RPM CircleCI configuration generator."""
 
-from __future__ import annotations
-
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Dict, Optional
 
 from ruamel.yaml import YAML
 
@@ -36,8 +35,8 @@ class GenerateCircleCIConfigTest(unittest.TestCase):
     """Exercise architecture selection through the generator CLI."""
 
     def generate(
-        self, specs: dict[str, str], settings: str | None = None
-    ) -> dict[str, object]:
+        self, specs: Dict[str, str], settings: Optional[str] = None
+    ) -> Dict[str, object]:
         """Generate and parse a config for a temporary packaging project."""
         with tempfile.TemporaryDirectory() as project_dir_string:
             project_dir = Path(project_dir_string)
@@ -49,15 +48,16 @@ class GenerateCircleCIConfigTest(unittest.TestCase):
             subprocess.run(
                 [sys.executable, str(GENERATOR), "--project-dir", str(project_dir)],
                 check=True,
-                capture_output=True,
-                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
             )
 
             config_file = project_dir / ".circleci" / "config.yml"
             with config_file.open(encoding="utf-8") as stream:
                 return YAML(typ="safe").load(stream)
 
-    def assert_only_x86_64_workflows(self, config: dict[str, object]) -> None:
+    def assert_only_x86_64_workflows(self, config: Dict[str, object]) -> None:
         """Assert every emitted workflow and deploy job targets x86_64."""
         workflows = config["workflows"]
         self.assertTrue(workflows)
