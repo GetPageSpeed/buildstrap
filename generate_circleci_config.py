@@ -427,7 +427,7 @@ circleci_config = {
                 },
                 {
                     "run": {
-                        "name": "Ensure project specific upload directory to avoid deploy collisions",
+                        "name": "Create project upload directory",
                         "command": command_incoming_mkdir,
                     }
                 },

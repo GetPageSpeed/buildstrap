@@ -54,6 +54,11 @@ class GenerateCircleCIConfigTest(unittest.TestCase):
             )
 
             config_file = project_dir / ".circleci" / "config.yml"
+            generated_text = config_file.read_text(encoding="utf-8")
+            self.assertFalse(
+                any(line != line.rstrip() for line in generated_text.splitlines()),
+                "generated config contains trailing whitespace",
+            )
             with config_file.open(encoding="utf-8") as stream:
                 return YAML(typ="safe").load(stream)
 
