@@ -168,6 +168,25 @@ BuildArch: noarch
                 build["enable_repos"], "getpagespeed-extras-varnish60"
             )
 
+    def test_standalone_repo_can_enable_its_publish_channel(self) -> None:
+        config = self.generate(
+            {"php.spec": ARCH_SPEC.format(name="php")},
+            settings=(
+                "git_branch: php84\n"
+                "enable_repos: getpagespeed-extras-php84\n"
+                "dists:\n"
+                "  - el7\n"
+                "archs:\n"
+                "  - x86_64\n"
+            ),
+        )
+
+        self.assertTrue(config["workflows"])
+        for workflow in config["workflows"].values():
+            build = next(job["build"] for job in workflow["jobs"] if "build" in job)
+            self.assertEqual(build["filters"]["branches"]["only"], ["php84"])
+            self.assertEqual(build["enable_repos"], "getpagespeed-extras-php84")
+
 
 if __name__ == "__main__":
     unittest.main()

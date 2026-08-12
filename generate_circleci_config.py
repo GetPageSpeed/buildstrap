@@ -79,6 +79,11 @@ if git_branch_override is not None:
     if not isinstance(git_branch_override, str) or not git_branch_override.strip():
         raise ValueError("settings.yml git_branch must be a non-empty string")
     git_branch_override = git_branch_override.strip()
+enable_repos_override = project_settings.get("enable_repos")
+if enable_repos_override is not None:
+    if not isinstance(enable_repos_override, str) or not enable_repos_override.strip():
+        raise ValueError("settings.yml enable_repos must be a non-empty string")
+    enable_repos_override = enable_repos_override.strip()
 # `dists:` is an allowlist (symmetric to `archs:`) over dist / dist-version /
 # dist-version-arch fnmatch patterns. Empty list / unset = no allowlist (build
 # everywhere except `exclude`). Use this when a repo is intrinsically scoped to
@@ -634,7 +639,9 @@ for distro_name, distro_info in distros.items():
                 # A branch may carry `enable_repos:` to override the conventional
                 # repo id (e.g. freenginx-mainline ships as
                 # [getpagespeed-freenginx-mainline]); null suppresses emission.
-                if collection_name and branch != "stable":
+                if enable_repos_override:
+                    build_job["build"]["enable_repos"] = enable_repos_override
+                elif collection_name and branch != "stable":
                     enable_repos = branch_config.get(
                         "enable_repos", f"getpagespeed-extras-{branch}"
                     )
@@ -677,8 +684,11 @@ for distro_name, distro_info in distros.items():
                     }
                 }
 
-                # if branch is "master", add "main" as well
-                if branch == "master":
+                # If the actual Git branch is master, accept main as an alias.
+                # A standalone project may map the default matrix key
+                # ("master") to a version channel such as php84; do not let
+                # that internal key silently enable deploys from main.
+                if branch == "master" and git_branch == "master":
                     deploy_job["deploy"]["filters"]["branches"]["only"].append("main")
 
                 # Self mode replaces branch-based filters with tag-based ones:
