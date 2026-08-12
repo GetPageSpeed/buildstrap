@@ -6,8 +6,41 @@ import json
 import re
 
 from ruamel.yaml import YAML
-from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.scalarstring import LiteralScalarString, FoldedScalarString
+
+
+SPEC_SECTION_RE = re.compile(
+    r"^%(?:description|package|prep|generate_buildrequires|build|install|check|"
+    r"files|pre|post|preun|postun|trigger\w*|changelog)\b",
+    re.IGNORECASE,
+)
+
+
+def get_spec_preamble_tag(spec_file, tag):
+    """Return a tag value from the main package preamble, if present."""
+    tag_re = re.compile(rf"^{re.escape(tag)}\s*:\s*(.*?)\s*(?:#.*)?$", re.IGNORECASE)
+    with open(spec_file, "r", encoding="utf-8") as spec_stream:
+        for raw_line in spec_stream:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if SPEC_SECTION_RE.match(line):
+                break
+            match = tag_re.match(line)
+            if match:
+                return match.group(1).strip()
+    return None
+
+
+def normalize_archs(configured_archs):
+    """Map the legacy synthetic noarch lane to its x86_64 build host."""
+    normalized_archs = []
+    for arch in configured_archs:
+        normalized_arch = "x86_64" if arch == "noarch" else arch
+        if normalized_arch not in normalized_archs:
+            normalized_archs.append(normalized_arch)
+    return normalized_archs
+
 
 # Initialize YAML handler
 yaml = YAML()
@@ -37,7 +70,9 @@ else:
 default_archs = ["x86_64", "aarch64"]
 
 # Get architectures from settings.yml or default to the default_archs
-archs = project_settings.get("archs", default_archs)
+configured_archs = project_settings.get("archs")
+noarch_build = configured_archs == ["noarch"]
+archs = normalize_archs(default_archs if configured_archs is None else configured_archs)
 exclude_patterns = project_settings.get("exclude", [])
 # `dists:` is an allowlist (symmetric to `archs:`) over dist / dist-version /
 # dist-version-arch fnmatch patterns. Empty list / unset = no allowlist (build
@@ -57,41 +92,37 @@ dists_allowlist = project_settings.get("dists", [])
 #   - no enable_repos / no nginx-collection plumbing
 # Any settings.yml knob (e.g. explicit `archs:`) still wins.
 self_mode = bool(project_settings.get("self", False))
-# if there is only one .spec file in the directory, look for "BuildArch:      noarch" in it
-# if found, set only "noarch" to the list of archs
-# An explicit `archs:` in settings.yml wins over spec sniffing.
-if "archs" not in project_settings and len(
-    [f for f in os.listdir(project_dir) if f.endswith(".spec")]
-) == 1:
-    spec_file = os.path.join(
-        project_dir, [f for f in os.listdir(project_dir) if f.endswith(".spec")][0]
-    )
-    # scan and split the spec file by lines
-    with open(spec_file, "r") as f:
-        spec_lines = f.readlines()
-        # look for "BuildArch: noarch" in the spec file
-        for line in spec_lines:
-            # replace duplicate spaces/tabs with a single space
-            line = re.sub(r"\s+", " ", line.strip())
-            # look for BuildArch: noarch in the spec file
-            if line.startswith("BuildArch:"):
-                build_arch = line.split(":", maxsplit=1)[1].strip()
-                if build_arch == "noarch":
-                    archs = ["noarch"]
-                    break
-            # look for ExclusiveArch: x86_64 in the spec file
-            if line.startswith("ExclusiveArch:"):
-                exclusive_archs = line.split(":", maxsplit=1)[1].strip()
-                exclusive_archs = exclusive_archs.split(" ")
-                # Specs may list RPM macros (%{arm}, %{?go_arches:...}) or
-                # arches we don't build for (i686). Keep only CI-buildable
-                # arches; if nothing survives (pure-macro list), keep the
-                # default matrix.
-                sanitized = [a for a in exclusive_archs if a in default_archs]
-                if sanitized:
-                    archs = sanitized
-                break
-exclude_archs = project_settings.get("exclude_archs", [])
+# A project whose every root spec declares the main package `BuildArch: noarch`
+# needs one build host per distro, not one per CPU architecture. Use the real
+# x86_64 lane so workflow names, runner selection, and incoming paths never
+# pretend that `noarch` is an executor architecture. An explicit real `archs:`
+# list still wins. The legacy explicit `archs: [noarch]` spelling is normalized
+# above for compatibility.
+spec_files = sorted(
+    os.path.join(project_dir, filename)
+    for filename in os.listdir(project_dir)
+    if filename.endswith(".spec")
+)
+if configured_archs is None and spec_files:
+    if all(
+        get_spec_preamble_tag(spec_file, "BuildArch") == "noarch"
+        for spec_file in spec_files
+    ):
+        archs = ["x86_64"]
+        noarch_build = True
+    elif len(spec_files) == 1:
+        exclusive_archs = get_spec_preamble_tag(spec_files[0], "ExclusiveArch")
+        if exclusive_archs:
+            # Specs may list RPM macros (%{arm}, %{?go_arches:...}) or
+            # arches we don't build for (i686). Keep only CI-buildable
+            # arches; if nothing survives (pure-macro list), keep the
+            # default matrix.
+            sanitized = [
+                arch for arch in exclusive_archs.split() if arch in default_archs
+            ]
+            if sanitized:
+                archs = sanitized
+exclude_archs = normalize_archs(project_settings.get("exclude_archs", []))
 
 # Exclude architectures
 archs = [arch for arch in archs if arch not in exclude_archs]
@@ -133,7 +164,9 @@ else:
     # project can explicitly specify a set of branches to reduce, using branch:
     # then filter out branches that are not in the list
     if "branch" in project_settings:
-        branches = {k: v for k, v in branches.items() if k in project_settings["branch"]}
+        branches = {
+            k: v for k, v in branches.items() if k in project_settings["branch"]
+        }
     # project can exclude branches, e.g. plesk, by specifying exclude_branches:
     if "exclude_branches" in project_settings:
         branches = {
@@ -146,8 +179,8 @@ resource_class = "medium"
 # Self mode default is small (verbatim template parity).
 if self_mode:
     resource_class = "small"
-# if only noarch, fine with small
-if len(archs) == 1 and "noarch" in archs:
+# A noarch build only needs the small x86_64 runner.
+if noarch_build:
     resource_class = "small"
 # projects may override resource class
 resource_class = project_settings.get("resource_class", resource_class)
@@ -315,13 +348,20 @@ if collection_name == "nginx":
     }
     build_job_executor_parameters["plesk"] = "<< parameters.plesk >>"
     build_job_executor_parameters["mod"] = "<< parameters.mod >>"
-    build_job_executor_parameters["failure_tolerance"] = "<< parameters.failure_tolerance >>"
+    build_job_executor_parameters["failure_tolerance"] = (
+        "<< parameters.failure_tolerance >>"
+    )
     rpmbuilder_executor_parameters["plesk"] = {"type": "integer", "default": 0}
     rpmbuilder_executor_parameters["mod"] = {"type": "integer", "default": 0}
-    rpmbuilder_executor_parameters["failure_tolerance"] = {"type": "string", "default": "0.1"}
+    rpmbuilder_executor_parameters["failure_tolerance"] = {
+        "type": "string",
+        "default": "0.1",
+    }
     rpmbuilder_executor_environment["PLESK"] = "<< parameters.plesk >>"
     rpmbuilder_executor_environment["MOD"] = "<< parameters.mod >>"
-    rpmbuilder_executor_environment["FAILURE_TOLERANCE"] = "<< parameters.failure_tolerance >>"
+    rpmbuilder_executor_environment["FAILURE_TOLERANCE"] = (
+        "<< parameters.failure_tolerance >>"
+    )
 
 
 circleci_config = {
@@ -510,8 +550,10 @@ for distro_name, distro_info in distros.items():
             # medium/arm.medium so this contributes zero diff to consumers that
             # do not set these keys. When unset, branch_config.get returns
             # None and the existing emit path is preserved exactly.
-            branch_rc = branch_config.get("resource_class")           # x86_64 build override
-            branch_arm_rc = branch_config.get("arm_resource_class")   # aarch64 build override
+            branch_rc = branch_config.get("resource_class")  # x86_64 build override
+            branch_arm_rc = branch_config.get(
+                "arm_resource_class"
+            )  # aarch64 build override
 
             for arch in archs:
                 # Skip architectures that are not supported
@@ -528,7 +570,11 @@ for distro_name, distro_info in distros.items():
                 # exclude: config can either have exclude: el or el7 or exclude: el7-x86_64 items
                 # check excludes with wildcard support (e.g., "*", "el*", "amzn*-aarch64")
                 combo_values = [dist, f"{dist}{version}", f"{dist}{version}-{arch}"]
-                if any(fnmatch.fnmatch(value, pattern) for value in combo_values for pattern in exclude_patterns):
+                if any(
+                    fnmatch.fnmatch(value, pattern)
+                    for value in combo_values
+                    for pattern in exclude_patterns
+                ):
                     continue
                 # If a `dists:` allowlist is set, drop anything that doesn't match it.
                 if dists_allowlist and not any(
@@ -588,11 +634,15 @@ for distro_name, distro_info in distros.items():
                     if "plesk_version" in branch_config:
                         build_job["build"]["plesk"] = branch_config["plesk_version"]
                     if "failure_tolerance" in branch_config:
-                        build_job["build"]["failure_tolerance"] = branch_config["failure_tolerance"]
+                        build_job["build"]["failure_tolerance"] = branch_config[
+                            "failure_tolerance"
+                        ]
 
                 # Add extra parameters for 'aarch64'
                 if arch == "aarch64":
-                    build_job["build"]["resource_class"] = branch_arm_rc or arm_resource_class
+                    build_job["build"]["resource_class"] = (
+                        branch_arm_rc or arm_resource_class
+                    )
                 elif branch_rc and branch_rc != resource_class:
                     # x86_64 normally inherits via the job parameter default;
                     # only emit an inline override when the branch differs
@@ -643,12 +693,8 @@ for distro_name, distro_info in distros.items():
                         if len(branches) == 1:
                             smoke_job_name = f"smoke-{dist}{version}-{arch}"
                         else:
-                            smoke_job_name = (
-                                f"smoke-{dist}{version}-{branch}-{arch}"
-                            )
-                        smoke_rc = (
-                            arm_resource_class if arch == "aarch64" else "medium"
-                        )
+                            smoke_job_name = f"smoke-{dist}{version}-{branch}-{arch}"
+                        smoke_rc = arm_resource_class if arch == "aarch64" else "medium"
                         smoke_job = {
                             "smoke": {
                                 "name": smoke_job_name,

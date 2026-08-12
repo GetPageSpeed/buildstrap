@@ -37,6 +37,13 @@ Example of implementation can be found in nginx-module-pagespeed-rpm.
 
 ### Project setup
 
+When every root-level spec in a project declares the main package as
+`BuildArch: noarch`, the generator emits only x86_64 workflows. The resulting
+RPM remains architecture-independent; x86_64 is simply the single build host.
+Mixed projects retain both x86_64 and aarch64 workflows. An explicit real
+`archs:` list in `settings.yml` overrides this detection. Legacy
+`archs: [noarch]` settings are accepted and normalized to x86_64.
+
 ```bash
 cd /rpm/project/dir
 mkdir -p .circleci
