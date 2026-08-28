@@ -1,11 +1,13 @@
 """Regression tests for the RPM CircleCI configuration generator."""
 
+import os
+import re
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from ruamel.yaml import YAML
 
@@ -186,6 +188,71 @@ BuildArch: noarch
             build = next(job["build"] for job in workflow["jobs"] if "build" in job)
             self.assertEqual(build["filters"]["branches"]["only"], ["php84"])
             self.assertEqual(build["enable_repos"], "getpagespeed-extras-php84")
+
+    @staticmethod
+    def deploy_commands(config: Dict[str, object]) -> List[str]:
+        """Return every shell command the deploy job runs."""
+        return [
+            step["run"]["command"]
+            for step in config["jobs"]["deploy"]["steps"]
+            if isinstance(step, dict) and "run" in step
+        ]
+
+    @staticmethod
+    def expand_untagged(fragment: str) -> str:
+        """Expand a command fragment the way a tag build's shell would.
+
+        CircleCI leaves ``CIRCLE_BRANCH`` unset on tag-triggered pipelines,
+        which is exactly when the deploy jobs run in self mode.
+        """
+        env = dict(os.environ)
+        env.pop("CIRCLE_BRANCH", None)
+        env.update(
+            {"CIRCLE_PROJECT_REPONAME": "ngm", "DISTRO": "el9", "ARCH": "x86_64"}
+        )
+        # The fragment is inlined into the script (not passed as $1) so the
+        # shell performs the same parameter expansion CircleCI would.
+        return subprocess.run(
+            ["sh", "-c", 'printf "%s" "' + fragment + '"'],
+            check=True,
+            env=env,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
+        ).stdout
+
+    def test_deploy_paths_never_lose_the_branch_component_on_tag_builds(self) -> None:
+        """A tag build must still land under a recognized branch directory.
+
+        Deploy jobs are tag-only, and CircleCI leaves ``CIRCLE_BRANCH`` empty on
+        tag pipelines, so a bare ``${CIRCLE_BRANCH}`` produced
+        ``~/incoming/ngm/el9/x86_64/``. incoming.sh then read the basename as
+        ``x86_64``, refused to integrate, and every upload was silently dropped
+        (ngm v0.0.23 and v0.0.24, 2026-08-28).
+        """
+        config = self.generate({"one.spec": NOARCH_SPEC.format(name="one")})
+
+        commands = self.deploy_commands(config)
+        self.assertTrue(commands)
+
+        paths = []
+        for command in commands:
+            self.assertNotIn(
+                "${CIRCLE_BRANCH}",
+                command,
+                "deploy command uses an undefaulted CIRCLE_BRANCH",
+            )
+            # Every token carrying the branch expansion is a path the build
+            # server has to be able to parse back into <dist>/<arch>/<branch>.
+            paths.extend(
+                token.strip('"')
+                for token in re.findall(r"\S*\$\{CIRCLE_BRANCH[^}]*\}\S*", command)
+            )
+        self.assertEqual(len(paths), 4, paths)
+
+        for path in paths:
+            expanded = self.expand_untagged(path)
+            self.assertNotIn("//", expanded, path)
+            self.assertIn("/x86_64/master", expanded, path)
 
 
 if __name__ == "__main__":

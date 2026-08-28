@@ -238,20 +238,31 @@ else
 fi"""
 )
 
+# CircleCI leaves CIRCLE_BRANCH empty on tag-triggered pipelines, and deploy
+# jobs are tag-only, so every self-mode deploy interpolated an empty branch
+# component: RPMs landed in ~/incoming/<proj>/<dist>/<arch>/ and incoming.sh
+# saw basename "x86_64", which is not a recognized deploy target, so it refused
+# to integrate. Uploads succeeded, nothing was ever published (ngm v0.0.23 and
+# v0.0.24, 2026-08-28). incoming.sh only distinguishes base from non-base
+# branches, and master/main are both base, so "master" is a safe fallback
+# whatever the repo's default branch is called.
+deploy_branch = "${CIRCLE_BRANCH:-master}"
+
 command_incoming_mkdir = FoldedScalarString(
     "ssh -o StrictHostKeyChecking=no "
     "$GPS_BUILD_USER@$GPS_BUILD_SERVER "
-    '"mkdir -p ~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}"'  # this way quotoing is important otherwise ~ resolves on local machine to /root
+    f'"mkdir -p ~/incoming/${{CIRCLE_PROJECT_REPONAME}}/${{DISTRO}}/${{ARCH}}/{deploy_branch}"'  # this way quotoing is important otherwise ~ resolves on local machine to /root
 )
 
 command_deploy_all_rpms = FoldedScalarString(
     "scp -o StrictHostKeyChecking=no -q -r *.rpm "
-    "$GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/"
+    f"$GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${{CIRCLE_PROJECT_REPONAME}}/${{DISTRO}}/${{ARCH}}/{deploy_branch}/"
 )
 
 command_trigger_incoming_hook = FoldedScalarString(
     "ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER"
-    ' "nohup ~/scripts/incoming.sh ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/ > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${ARCH}/${CIRCLE_BRANCH}/process.log 2>&1&"'
+    f' "nohup ~/scripts/incoming.sh ${{CIRCLE_PROJECT_REPONAME}}/${{DISTRO}}/${{ARCH}}/{deploy_branch}/'
+    f" > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${{ARCH}}/{deploy_branch}/process.log 2>&1&\""
 )
 
 build_steps = [
