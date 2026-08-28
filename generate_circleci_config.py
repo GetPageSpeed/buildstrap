@@ -238,15 +238,23 @@ else
 fi"""
 )
 
-# CircleCI leaves CIRCLE_BRANCH empty on tag-triggered pipelines, and deploy
-# jobs are tag-only, so every self-mode deploy interpolated an empty branch
-# component: RPMs landed in ~/incoming/<proj>/<dist>/<arch>/ and incoming.sh
-# saw basename "x86_64", which is not a recognized deploy target, so it refused
-# to integrate. Uploads succeeded, nothing was ever published (ngm v0.0.23 and
-# v0.0.24, 2026-08-28). incoming.sh only distinguishes base from non-base
-# branches, and master/main are both base, so "master" is a safe fallback
-# whatever the repo's default branch is called.
-deploy_branch = "${CIRCLE_BRANCH:-master}"
+# CircleCI leaves CIRCLE_BRANCH empty on tag-triggered pipelines. In self mode
+# the deploy job is tag-only (see the filters below), so EVERY self-mode deploy
+# interpolated an empty branch component: RPMs landed in
+# ~/incoming/<proj>/<dist>/<arch>/ and incoming.sh saw basename "x86_64", which
+# is not a recognized deploy target, so it refused to integrate. Uploads
+# succeeded, nothing was ever published (ngm v0.0.23 and v0.0.24, 2026-08-28).
+# incoming.sh only distinguishes base from non-base branches, and master/main
+# are both base, so "master" is a safe fallback whatever the repo's default
+# branch is called.
+#
+# Deliberately scoped to self mode. Non-self deploy jobs are branch-filtered,
+# so CIRCLE_BRANCH is always populated for them and the default would never
+# fire — but the changed `command` string is a semantic diff under
+# ensure-latest.sh's [skip ci] rule, so emitting it fleet-wide would push a
+# CI-firing commit to every packaging repo (~18 workflows each) to no effect.
+# Consumers that cannot hit the bug keep a byte-identical config.
+deploy_branch = "${CIRCLE_BRANCH:-master}" if self_mode else "${CIRCLE_BRANCH}"
 
 command_incoming_mkdir = FoldedScalarString(
     "ssh -o StrictHostKeyChecking=no "

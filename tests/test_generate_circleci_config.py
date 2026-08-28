@@ -229,7 +229,9 @@ BuildArch: noarch
         ``x86_64``, refused to integrate, and every upload was silently dropped
         (ngm v0.0.23 and v0.0.24, 2026-08-28).
         """
-        config = self.generate({"one.spec": NOARCH_SPEC.format(name="one")})
+        config = self.generate(
+            {"one.spec": NOARCH_SPEC.format(name="one")}, settings="self: true\n"
+        )
 
         commands = self.deploy_commands(config)
         self.assertTrue(commands)
@@ -253,6 +255,36 @@ BuildArch: noarch
             expanded = self.expand_untagged(path)
             self.assertNotIn("//", expanded, path)
             self.assertIn("/x86_64/master", expanded, path)
+
+    def test_non_self_deploy_commands_are_unchanged(self) -> None:
+        """Consumers that cannot hit the tag-build bug keep byte-identical CI.
+
+        Non-self deploy jobs are branch-filtered, so CIRCLE_BRANCH is always
+        populated and the ``:-master`` default would never fire. Emitting it
+        anyway would still rewrite the ``command`` strings, which is a semantic
+        diff under ensure-latest.sh's [skip ci] rule — every packaging repo in
+        the fleet would push a CI-firing commit (~18 workflows each) for no
+        behavioral change. Pin the exact strings so a future edit to the deploy
+        steps has to face that cost deliberately.
+        """
+        config = self.generate({"one.spec": NOARCH_SPEC.format(name="one")})
+
+        incoming = "~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}"
+        self.assertEqual(
+            self.deploy_commands(config),
+            [
+                "ssh -o StrictHostKeyChecking=no $GPS_BUILD_USER@$GPS_BUILD_SERVER"
+                f' "mkdir -p {incoming}"',
+                "scp -o StrictHostKeyChecking=no -q -r *.rpm"
+                " $GPS_BUILD_USER@$GPS_BUILD_SERVER:"
+                "~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/",
+                "ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER"
+                ' "nohup ~/scripts/incoming.sh'
+                " ${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/"
+                " > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${ARCH}/${CIRCLE_BRANCH}"
+                '/process.log 2>&1&"',
+            ],
+        )
 
 
 if __name__ == "__main__":
