@@ -272,19 +272,31 @@ fi"""
 # Consumers that cannot hit the bug keep a byte-identical config.
 deploy_branch = "${CIRCLE_BRANCH:-master}" if self_mode else "${CIRCLE_BRANCH}"
 
+# The legacy CircleCI organization no longer carries these non-secret routing
+# values in org-global after the context split. Keep myci output byte-identical
+# and default only explicitly declared CircleCI projects to the canonical
+# deployment endpoint. Authentication still comes exclusively from the SSH key
+# attached to the deploy job.
+deploy_target = "$GPS_BUILD_USER@$GPS_BUILD_SERVER"
+if ci_backend == "circleci":
+    deploy_target = (
+        "${GPS_BUILD_USER:-builder}@"
+        "${GPS_BUILD_SERVER:-web.getpagespeed.com}"
+    )
+
 command_incoming_mkdir = FoldedScalarString(
     "ssh -o StrictHostKeyChecking=no "
-    "$GPS_BUILD_USER@$GPS_BUILD_SERVER "
+    f"{deploy_target} "
     f'"mkdir -p ~/incoming/${{CIRCLE_PROJECT_REPONAME}}/${{DISTRO}}/${{ARCH}}/{deploy_branch}"'  # this way quotoing is important otherwise ~ resolves on local machine to /root
 )
 
 command_deploy_all_rpms = FoldedScalarString(
     "scp -o StrictHostKeyChecking=no -q -r *.rpm "
-    f"$GPS_BUILD_USER@$GPS_BUILD_SERVER:~/incoming/${{CIRCLE_PROJECT_REPONAME}}/${{DISTRO}}/${{ARCH}}/{deploy_branch}/"
+    f"{deploy_target}:~/incoming/${{CIRCLE_PROJECT_REPONAME}}/${{DISTRO}}/${{ARCH}}/{deploy_branch}/"
 )
 
 command_trigger_incoming_hook = FoldedScalarString(
-    "ssh -o StrictHostKeyChecking=no -q $GPS_BUILD_USER@$GPS_BUILD_SERVER"
+    f"ssh -o StrictHostKeyChecking=no -q {deploy_target}"
     f' "nohup ~/scripts/incoming.sh ${{CIRCLE_PROJECT_REPONAME}}/${{DISTRO}}/${{ARCH}}/{deploy_branch}/'
     f" > ~/incoming/$CIRCLE_PROJECT_REPONAME/$DISTRO/${{ARCH}}/{deploy_branch}/process.log 2>&1&\""
 )

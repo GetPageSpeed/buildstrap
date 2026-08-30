@@ -339,6 +339,15 @@ BuildArch: noarch
         }
 
         self.assertEqual(contexts, {"org-global"})
+        deploy_commands = self.deploy_commands(config)
+        self.assertTrue(
+            all(
+                "${GPS_BUILD_USER:-builder}@"
+                "${GPS_BUILD_SERVER:-web.getpagespeed.com}" in command
+                for command in deploy_commands
+            ),
+            deploy_commands,
+        )
 
 
 if __name__ == "__main__":
