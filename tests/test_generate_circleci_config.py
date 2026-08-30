@@ -318,6 +318,28 @@ BuildArch: noarch
             self.assertEqual(contexts["smoke"], {"build-deps"})
         self.assertNotIn("org-global", {c for cs in contexts.values() for c in cs})
 
+    def test_circleci_backend_uses_available_legacy_context(self) -> None:
+        """CircleCI-only projects can retain their existing context inventory."""
+        config = self.generate(
+            {"one.spec": ARCH_SPEC.format(name="one")},
+            settings=(
+                "ci_backend: circleci\n"
+                "post_deploy_smoke:\n"
+                "  master:\n"
+                "    dists: [el9]\n"
+                "    archs: [x86_64]\n"
+            ),
+        )
+
+        contexts = {
+            spec.get("context")
+            for workflow in config["workflows"].values()
+            for job in workflow["jobs"]
+            for spec in job.values()
+        }
+
+        self.assertEqual(contexts, {"org-global"})
+
 
 if __name__ == "__main__":
     unittest.main()
