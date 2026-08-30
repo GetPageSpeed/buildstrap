@@ -644,7 +644,12 @@ for distro_name, distro_info in distros.items():
                 build_job = {
                     "build": {
                         "name": build_job_name,
-                        "context": "org-global",
+                        # Least-privilege contexts (2026-08-30): a build job gets the
+                        # repo-READ tokens only. The package-repo PUBLISH credentials
+                        # live in `deploy`, which myci refuses to inject on any runner
+                        # not marked `trusted: true` — four of the six runners are
+                        # shared customer production boxes.
+                        "context": "build-deps",
                         "dist": f"{dist}{version}",
                         "filters": {"branches": {"only": only_branches}},
                     }
@@ -695,7 +700,8 @@ for distro_name, distro_info in distros.items():
                 deploy_job = {
                     "deploy": {
                         "name": deploy_job_name,
-                        "context": "org-global",
+                        # Publish rights: trusted runners only. See the build job above.
+                        "context": "deploy",
                         "dist": f"{dist}{version}",
                         "arch": arch,
                         "filters": {"branches": {"only": only_branches}},
@@ -744,7 +750,9 @@ for distro_name, distro_info in distros.items():
                         smoke_job = {
                             "smoke": {
                                 "name": smoke_job_name,
-                                "context": "org-global",
+                                # Installs the just-published package; needs repo-read
+                                # auth only, never publish rights.
+                                "context": "build-deps",
                                 "dist": f"{dist}{version}",
                                 "arch": arch,
                                 "resource_class": smoke_rc,

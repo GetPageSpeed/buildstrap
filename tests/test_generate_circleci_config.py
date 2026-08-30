@@ -286,6 +286,38 @@ BuildArch: noarch
             ],
         )
 
+    def test_build_and_deploy_jobs_carry_least_privilege_contexts(self) -> None:
+        """Build jobs must not carry the package-repo publish credentials.
+
+        `org-global` bundled the repo-read build tokens with GPS_BUILD_* (the
+        ability to put an RPM in front of every customer) and was handed to
+        every job on whichever runner myci picked — four of six are shared
+        customer production boxes. Since 2026-08-30 myci refuses to inject the
+        `deploy` context on a runner not marked `trusted: true`, so regenerating
+        a config must keep the two halves apart.
+        """
+        config = self.generate(
+            {"one.spec": ARCH_SPEC.format(name="one")},
+            settings=(
+                "post_deploy_smoke:\n"
+                "  master:\n"
+                "    dists: [el9]\n"
+                "    archs: [x86_64]\n"
+            ),
+        )
+
+        contexts = {}
+        for workflow in config["workflows"].values():
+            for job in workflow["jobs"]:
+                for job_name, spec in job.items():
+                    contexts.setdefault(job_name, set()).add(spec.get("context"))
+
+        self.assertEqual(contexts["build"], {"build-deps"})
+        self.assertEqual(contexts["deploy"], {"deploy"})
+        if "smoke" in contexts:
+            self.assertEqual(contexts["smoke"], {"build-deps"})
+        self.assertNotIn("org-global", {c for cs in contexts.values() for c in cs})
+
 
 if __name__ == "__main__":
     unittest.main()
