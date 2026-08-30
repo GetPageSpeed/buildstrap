@@ -66,22 +66,6 @@ if os.path.exists(settings_file):
 else:
     project_settings = {}
 
-# The same generated schema is consumed by myci and legacy CircleCI projects,
-# but their context inventories are intentionally different. myci has split,
-# least-privilege contexts; the remaining CircleCI organization still exposes
-# the historical combined context. Require an explicit backend selection for
-# that compatibility path so myci stays secure by default.
-ci_backend = project_settings.get("ci_backend", "myci")
-if ci_backend not in {"myci", "circleci"}:
-    raise ValueError("settings.yml ci_backend must be 'myci' or 'circleci'")
-job_contexts = {
-    "build": "build-deps",
-    "deploy": "deploy",
-    "smoke": "build-deps",
-}
-if ci_backend == "circleci":
-    job_contexts = {job: "org-global" for job in job_contexts}
-
 # Default architectures
 default_archs = ["x86_64", "aarch64"]
 
@@ -665,7 +649,7 @@ for distro_name, distro_info in distros.items():
                         # live in `deploy`, which myci refuses to inject on any runner
                         # not marked `trusted: true` — four of the six runners are
                         # shared customer production boxes.
-                        "context": job_contexts["build"],
+                        "context": "build-deps",
                         "dist": f"{dist}{version}",
                         "filters": {"branches": {"only": only_branches}},
                     }
@@ -717,7 +701,7 @@ for distro_name, distro_info in distros.items():
                     "deploy": {
                         "name": deploy_job_name,
                         # Publish rights: trusted runners only. See the build job above.
-                        "context": job_contexts["deploy"],
+                        "context": "deploy",
                         "dist": f"{dist}{version}",
                         "arch": arch,
                         "filters": {"branches": {"only": only_branches}},
@@ -768,7 +752,7 @@ for distro_name, distro_info in distros.items():
                                 "name": smoke_job_name,
                                 # Installs the just-published package; needs repo-read
                                 # auth only, never publish rights.
-                                "context": job_contexts["smoke"],
+                                "context": "build-deps",
                                 "dist": f"{dist}{version}",
                                 "arch": arch,
                                 "resource_class": smoke_rc,
