@@ -170,6 +170,39 @@ BuildArch: noarch
                 build["enable_repos"], "getpagespeed-extras-varnish60"
             )
 
+    def test_plesk_channel_from_master_skips_distros_without_plesk(self) -> None:
+        """has_plesk=False (el10) must apply even when git_branch overrides plesk.
+
+        sw-nginx-compat builds the plesk channel from master; before 2026-09-02
+        the exclusion keyed on git_branch and emitted an el10-plesk lane.
+        """
+        config = self.generate(
+            {"sw-nginx-compat.spec": ARCH_SPEC.format(name="sw-nginx-compat")},
+            settings=(
+                "collection: nginx\n"
+                "branches:\n"
+                "  plesk:\n"
+                "    description: Plesk\n"
+                "    plesk_version: 18\n"
+                "    git_branch: master\n"
+                "    only_dists:\n"
+                "      - \"el*\"\n"
+                "    only_archs:\n"
+                "      - x86_64\n"
+            ),
+        )
+
+        workflows = set(config["workflows"])
+        self.assertEqual(
+            workflows,
+            {"build-deploy-el7-x86_64", "build-deploy-el8-x86_64", "build-deploy-el9-x86_64"},
+        )
+        for workflow in config["workflows"].values():
+            build = next(job["build"] for job in workflow["jobs"] if "build" in job)
+            self.assertEqual(build["plesk"], 18)
+            self.assertEqual(build["enable_repos"], "getpagespeed-extras-plesk")
+            self.assertEqual(build["filters"]["branches"]["only"], ["main", "master", "stable"])
+
     def test_standalone_repo_can_enable_its_publish_channel(self) -> None:
         config = self.generate(
             {"php.spec": ARCH_SPEC.format(name="php")},

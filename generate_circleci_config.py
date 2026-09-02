@@ -566,8 +566,11 @@ for distro_name, distro_info in distros.items():
         for branch in branches:
             branch_config = branches[branch]
             # Skip plesk branch on distro versions that don't support Plesk
-            # (e.g. el10). Mirrors generate_config.py:175 logic.
-            if branch_config.get("git_branch", branch) == "plesk" and not has_plesk:
+            # (e.g. el10). Mirrors generate_config.py:175 logic. Keyed on the
+            # channel name, not git_branch: a standalone Plesk repo such as
+            # sw-nginx-compat builds the plesk channel from its master branch
+            # (git_branch: master) and must still drop el10 (2026-09-02).
+            if "plesk" in (branch, branch_config.get("git_branch")) and not has_plesk:
                 continue
             # if only_dists list is present in branch_config, compare each element as wildcard "*" against current dist
             # and if matches, skip this distro
