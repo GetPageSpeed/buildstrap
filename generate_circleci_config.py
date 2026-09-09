@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import fnmatch
+import io
 import os
 import argparse
 import json
@@ -773,7 +774,17 @@ circleci_dir = os.path.join(project_dir, ".circleci")
 os.makedirs(circleci_dir, exist_ok=True)
 config_file = os.path.join(circleci_dir, "config.yml")
 
+# ruamel folds long plain scalars (e.g. a step `name:` or a parameter
+# `description:`) across lines and leaves a trailing space at the fold point.
+# That whitespace is semantically invisible -- ci-config-workflow-names-only.py
+# compares parsed YAML, so stripping it keeps ensure-latest.sh's [skip ci] rule
+# satisfied and never fires a fleet-wide rebuild -- but it makes generated
+# configs fail lint and trip the tests' no-trailing-whitespace invariant.
+buffer = io.StringIO()
+yaml.dump(circleci_config, buffer)
+rendered = "".join(line.rstrip() + "\n" for line in buffer.getvalue().splitlines())
+
 with open(config_file, "w") as f:
-    yaml.dump(circleci_config, f)
+    f.write(rendered)
 
 print(f"CircleCI configuration generated at {config_file}")
