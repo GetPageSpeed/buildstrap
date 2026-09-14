@@ -1,5 +1,6 @@
 """Regression tests for the RPM CircleCI configuration generator."""
 
+import json
 import os
 import re
 import subprocess
@@ -37,7 +38,10 @@ class GenerateCircleCIConfigTest(unittest.TestCase):
     """Exercise architecture selection through the generator CLI."""
 
     def generate(
-        self, specs: Dict[str, str], settings: Optional[str] = None
+        self,
+        specs: Dict[str, str],
+        settings: Optional[str] = None,
+        matrix_config: Optional[Dict[str, object]] = None,
     ) -> Dict[str, object]:
         """Generate and parse a config for a temporary packaging project."""
         with tempfile.TemporaryDirectory() as project_dir_string:
@@ -47,8 +51,18 @@ class GenerateCircleCIConfigTest(unittest.TestCase):
             if settings is not None:
                 (project_dir / "settings.yml").write_text(settings, encoding="utf-8")
 
+            generator = GENERATOR
+            if matrix_config is not None:
+                generator_dir = project_dir / "generator"
+                generator_dir.mkdir()
+                generator = generator_dir / GENERATOR.name
+                generator.write_bytes(GENERATOR.read_bytes())
+                (generator_dir / "matrix.json").write_text(
+                    json.dumps(matrix_config), encoding="utf-8"
+                )
+
             subprocess.run(
-                [sys.executable, str(GENERATOR), "--project-dir", str(project_dir)],
+                [sys.executable, str(generator), "--project-dir", str(project_dir)],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -171,11 +185,13 @@ BuildArch: noarch
             )
 
     def test_plesk_channel_from_master_skips_distros_without_plesk(self) -> None:
-        """has_plesk=False (el10) must apply even when git_branch overrides plesk.
+        """Honor a disabled Plesk lane when its Git branch is overridden.
 
         sw-nginx-compat builds the plesk channel from master; before 2026-09-02
         the exclusion keyed on git_branch and emitted an el10-plesk lane.
         """
+        matrix_config = json.loads((REPO_ROOT / "matrix.json").read_text())
+        matrix_config["distros"]["rhel"]["version_overrides"]["10"]["has_plesk"] = False
         config = self.generate(
             {"sw-nginx-compat.spec": ARCH_SPEC.format(name="sw-nginx-compat")},
             settings=(
@@ -190,6 +206,7 @@ BuildArch: noarch
                 "    only_archs:\n"
                 "      - x86_64\n"
             ),
+            matrix_config=matrix_config,
         )
 
         workflows = set(config["workflows"])
@@ -202,6 +219,53 @@ BuildArch: noarch
             self.assertEqual(build["plesk"], 18)
             self.assertEqual(build["enable_repos"], "getpagespeed-extras-plesk")
             self.assertEqual(build["filters"]["branches"]["only"], ["main", "master", "stable"])
+
+    def test_plesk_bridge_includes_el10_from_master(self) -> None:
+        """Emit the EL10 Plesk bridge with the existing master branch routing."""
+        config = self.generate(
+            {"sw-nginx-compat.spec": ARCH_SPEC.format(name="sw-nginx-compat")},
+            settings=(
+                "collection: nginx\n"
+                "branches:\n"
+                "  plesk:\n"
+                "    description: Plesk\n"
+                "    plesk_version: 18\n"
+                "    git_branch: master\n"
+                "    only_dists: [\"el*\"]\n"
+                "    only_archs: [x86_64]\n"
+            ),
+        )
+        self.assertEqual(
+            set(config["workflows"]),
+            {f"build-deploy-el{version}-x86_64" for version in (7, 8, 9, 10)},
+        )
+        build = next(
+            job["build"]
+            for job in config["workflows"]["build-deploy-el10-x86_64"]["jobs"]
+            if "build" in job
+        )
+        self.assertEqual(build["plesk"], 18)
+        self.assertEqual(build["enable_repos"], "getpagespeed-extras-plesk")
+        self.assertEqual(build["filters"]["branches"]["only"], ["main", "master", "stable"])
+
+    def test_plesk_cohort_includes_el10_x86_64_only(self) -> None:
+        """Add EL10 Plesk modules without introducing an unsupported ARM lane."""
+        config = self.generate(
+            {"module.spec": ARCH_SPEC.format(name="module")},
+            settings="collection: nginx\nbranch: [stable, plesk]\n",
+        )
+        workflows = config["workflows"]
+        self.assertIn("build-deploy-el10-plesk-x86_64", workflows)
+        self.assertNotIn("build-deploy-el10-plesk-aarch64", workflows)
+        self.assertIn("build-deploy-el10-stable-aarch64", workflows)
+        build = next(
+            job["build"]
+            for job in workflows["build-deploy-el10-plesk-x86_64"]["jobs"]
+            if "build" in job
+        )
+        self.assertEqual(build["plesk"], 18)
+        self.assertEqual(build["enable_repos"], "getpagespeed-extras-plesk")
+        self.assertEqual(build["filters"]["branches"]["only"], ["plesk"])
 
     def test_standalone_repo_can_enable_its_publish_channel(self) -> None:
         config = self.generate(

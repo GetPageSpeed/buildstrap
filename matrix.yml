@@ -44,7 +44,7 @@ distros:
         docker: centos
         packager: yum
       10:
-        has_plesk: False
+        has_plesk: True
   fedora:
     dist: fc
     dir: fedora
