@@ -372,6 +372,14 @@ BuildArch: noarch
             [
                 "ssh -o StrictHostKeyChecking=no $GPS_BUILD_USER@$GPS_BUILD_SERVER"
                 f' "mkdir -p {incoming}"',
+                # SRPM hygiene step (2026-09-24): the one deliberate fleet-wide
+                # deploy-step change — see the SRPM upload hygiene block in the
+                # generator. This fixture is x86_64-only but the default matrix
+                # carries fc/sles/amzn2 dists whose SRPMs the server purges.
+                'case "${DISTRO}-${ARCH}" in\n'
+                "  amzn2023-x86_64|el10-x86_64|el7-x86_64|el8-x86_64|el9-x86_64) ;;\n"
+                "  *) rm -f ./*.src.rpm ;;\n"
+                "esac\n",
                 "scp -o StrictHostKeyChecking=no -q -r *.rpm"
                 " $GPS_BUILD_USER@$GPS_BUILD_SERVER:"
                 "~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/${CIRCLE_BRANCH}/",
@@ -414,6 +422,82 @@ BuildArch: noarch
         if "smoke" in contexts:
             self.assertEqual(contexts["smoke"], {"build-deps"})
         self.assertNotIn("org-global", {c for cs in contexts.values() for c in cs})
+
+
+    # ------------------------------------------------------------------
+    # SRPM upload hygiene: the deploy job drops .src.rpm on every lane
+    # that is not a dist's designated SRPM carrier (duplicate arch lane,
+    # or a dist whose base-channel SRPMs the repo server purges daily:
+    # fc*/sles*/amzn2).
+    # ------------------------------------------------------------------
+
+    def get_srpm_drop_command(self, config: Dict[str, object]) -> Optional[str]:
+        """Return the drop step's command, or None when the step is absent."""
+        for step in config["jobs"]["deploy"]["steps"]:
+            if isinstance(step, dict) and "run" in step:
+                if step["run"]["name"].startswith("Drop SRPMs"):
+                    return step["run"]["command"]
+        return None
+
+    def test_multi_arch_project_drops_srpm_on_non_carrier_lanes(self) -> None:
+        config = self.generate({"two.spec": ARCH_SPEC.format(name="two")})
+
+        command = self.get_srpm_drop_command(config)
+        self.assertIsNotNone(command)
+        # x86_64 carries the SRPM for kept dists...
+        self.assertIn("el9-x86_64", command)
+        self.assertIn("amzn2023-x86_64", command)
+        # ...aarch64 lanes never do, and purged dists have no carrier at all.
+        self.assertNotIn("aarch64", command)
+        self.assertNotIn("fc43", command)
+        self.assertNotIn("sles", command)
+        self.assertNotIn("amzn2-x86_64", command)
+        self.assertIn("rm -f ./*.src.rpm", command)
+
+        # The drop must happen before the scp upload step.
+        step_names = [
+            step["run"]["name"]
+            for step in config["jobs"]["deploy"]["steps"]
+            if isinstance(step, dict) and "run" in step
+        ]
+        self.assertLess(
+            step_names.index("Drop SRPMs the repo server would discard"),
+            step_names.index("Deploy all RPMs to GetPageSpeed repo."),
+        )
+
+    def test_single_arch_kept_dists_project_stays_byte_identical(self) -> None:
+        # x86_64-only, el-only: every lane is its dist's SRPM carrier, so the
+        # step must not be emitted (a semantic diff would push-fire CI fleet-wide).
+        config = self.generate(
+            {"one.spec": ARCH_SPEC.format(name="one")},
+            settings=("dists: ['el*']\narchs: [x86_64]\n"),
+        )
+
+        self.assertIsNone(self.get_srpm_drop_command(config))
+
+    def test_single_arch_purged_dist_project_still_drops_srpm(self) -> None:
+        config = self.generate(
+            {"one.spec": ARCH_SPEC.format(name="one")},
+            settings=("dists: ['fc*']\narchs: [x86_64]\n"),
+        )
+
+        command = self.get_srpm_drop_command(config)
+        self.assertIsNotNone(command)
+        # No kept dist at all: unconditional drop, no case statement.
+        self.assertEqual(command, "rm -f ./*.src.rpm")
+
+    def test_aarch64_only_project_keeps_srpm_on_its_sole_lane(self) -> None:
+        config = self.generate(
+            {"one.spec": ARCH_SPEC.format(name="one")},
+            settings=("archs: [aarch64]\n"),
+        )
+
+        command = self.get_srpm_drop_command(config)
+        # Purged dists (fc*/sles*/amzn2) still need dropping...
+        self.assertIsNotNone(command)
+        # ...but kept dists' SRPMs ride the aarch64 lane, their only one.
+        self.assertIn("el9-aarch64", command)
+        self.assertNotIn("x86_64", command)
 
 
 if __name__ == "__main__":

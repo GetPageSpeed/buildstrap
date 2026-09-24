@@ -517,6 +517,11 @@ if post_deploy_smoke:
 # Prepare workflows
 workflows = {}
 
+# Emitted deploy lanes, keyed by (branch, dist_tag) -> [archs in emit order].
+# Feeds the SRPM-drop deploy step below: only a dist's designated SRPM
+# carrier lane uploads its .src.rpm.
+deploy_lanes_by_branch_dist = {}
+
 
 # Function to generate workflow names
 def get_workflow_name(dist, version, branch, arch):
@@ -733,6 +738,9 @@ for distro_name, distro_info in distros.items():
 
                 # Construct the workflow
                 workflows[workflow_name] = {"jobs": [build_job, deploy_job]}
+                deploy_lanes_by_branch_dist.setdefault(
+                    (branch, f"{dist}{version}"), []
+                ).append(arch)
 
                 # Opt-in post-deploy smoke job. Default-off: if the project's
                 # settings.yml has no post_deploy_smoke block, nothing is
@@ -765,6 +773,67 @@ for distro_name, distro_info in distros.items():
                             }
                         }
                         workflows[workflow_name]["jobs"].append(smoke_job)
+
+# --- SRPM upload hygiene -----------------------------------------------------
+# Every (dist, arch) deploy lane ships its full workspace (*.rpm), so a
+# multi-arch project uploads each dist's identical SRPM once per arch
+# (incoming.sh discards the duplicate), and fedora/sles/amzn2 base-channel
+# SRPMs are purged by the repo server's @daily cron within 24h anyway
+# (rebuildable from the kept redhat/ SRPMs — builder-scripts
+# docs/guides/retention.md). gvisor / aws-lc SRPMs are 150-170 MB per dist,
+# ~5 GB of doomed transfer in one build round (2026-09-24 Linode inbound
+# alert). Drop the .src.rpm before scp on every lane that is not a dist's
+# designated SRPM carrier. Keep the purge patterns in step with that cron and
+# with builder-scripts upload.sh SRPM_PURGED_DIST_PATTERNS.
+#
+# The step is emitted only when some lane actually has an SRPM to drop, so a
+# single-arch project with no purged dists keeps a byte-identical config (see
+# the self_mode deploy_branch comment above: any semantic diff here
+# push-fires CI across the fleet once).
+SRPM_PURGED_DIST_PATTERNS = ["fc*", "sles*", "amzn2"]
+
+
+def dist_srpms_purged(dist_tag):
+    return any(
+        fnmatch.fnmatch(dist_tag, pattern) for pattern in SRPM_PURGED_DIST_PATTERNS
+    )
+
+
+srpm_keep_lanes = set()
+all_deploy_lanes = set()
+for (_lane_branch, lane_dist), lane_archs in deploy_lanes_by_branch_dist.items():
+    all_deploy_lanes.update((lane_dist, lane_arch) for lane_arch in lane_archs)
+    if dist_srpms_purged(lane_dist):
+        continue
+    # Carrier chosen per (branch, dist) so a hypothetical aarch64-only branch
+    # still ships its own SRPM; the union across branches errs toward an
+    # extra upload (the server dedupes), never a missing one.
+    keep_arch = "x86_64" if "x86_64" in lane_archs else lane_archs[0]
+    srpm_keep_lanes.add((lane_dist, keep_arch))
+
+if all_deploy_lanes - srpm_keep_lanes:
+    if srpm_keep_lanes:
+        srpm_keep_patterns = "|".join(
+            f"{lane_dist}-{lane_arch}"
+            for lane_dist, lane_arch in sorted(srpm_keep_lanes)
+        )
+        srpm_drop_command = LiteralScalarString(
+            'case "${DISTRO}-${ARCH}" in\n'
+            f"  {srpm_keep_patterns}) ;;\n"
+            "  *) rm -f ./*.src.rpm ;;\n"
+            "esac\n"
+        )
+    else:
+        srpm_drop_command = "rm -f ./*.src.rpm"
+    circleci_config["jobs"]["deploy"]["steps"].insert(
+        3,
+        {
+            "run": {
+                "name": "Drop SRPMs the repo server would discard",
+                "command": srpm_drop_command,
+            }
+        },
+    )
 
 # Add the generated workflows to the CircleCI config
 circleci_config["workflows"].update(workflows)
