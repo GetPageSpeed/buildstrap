@@ -499,6 +499,106 @@ BuildArch: noarch
         self.assertIn("el9-aarch64", command)
         self.assertNotIn("x86_64", command)
 
+    UNITS_SETTINGS = (
+        "dists:\n"
+        "  - el7\n"
+        "archs:\n"
+        "  - x86_64\n"
+        "resource_class: large\n"
+        "lastversion: false\n"
+        "units_from_matrix: true\n"
+    )
+
+    UNITS_MATRIX = (
+        "versions:\n"
+        '  "5.6": { scl: php56, channel: php56, php_twin: committed, pecl: "zip jsonc" }\n'
+        '  "7.3": { scl: php73, channel: php73, php_twin: generated, pecl: "zip" }\n'
+    )
+
+    def test_units_mode_emits_one_isolated_workflow_per_unit(self) -> None:
+        """A matrix monorepo gets per-unit build+deploy workflows on master.
+
+        Isolation matters: a unit whose NVRs are all published halts (cancels)
+        only its own workflow, and each workflow's workspace carries only its
+        own unit's RPMs, so the fixed-channel deploy never ships another
+        unit's packages.
+        """
+        config = self.generate(
+            {"matrix.yml": self.UNITS_MATRIX},
+            settings=self.UNITS_SETTINGS,
+        )
+
+        workflows = config["workflows"]
+        self.assertEqual(
+            sorted(workflows),
+            ["build-deploy-el7-x86_64-php56", "build-deploy-el7-x86_64-php73"],
+        )
+        for channel, unit_version in (("php56", "5.6"), ("php73", "7.3")):
+            jobs = workflows[f"build-deploy-el7-x86_64-{channel}"]["jobs"]
+            build = next(job["build"] for job in jobs if "build" in job)
+            deploy = next(job["deploy"] for job in jobs if "deploy" in job)
+            self.assertEqual(build["enable_repos"], f"getpagespeed-extras-{channel}")
+            self.assertEqual(build["unit_version"], unit_version)
+            self.assertEqual(
+                build["filters"]["branches"]["only"], ["master", "main"]
+            )
+            self.assertEqual(deploy["channel"], channel)
+            self.assertEqual(deploy["requires"], [f"build-el7-x86_64-{channel}"])
+
+    def test_units_mode_assembles_before_building(self) -> None:
+        config = self.generate(
+            {"matrix.yml": self.UNITS_MATRIX},
+            settings=self.UNITS_SETTINGS,
+        )
+
+        build_commands = [
+            step["run"]["command"]
+            for step in config["jobs"]["build"]["steps"]
+            if isinstance(step, dict) and "run" in step
+        ]
+        self.assertIn(
+            "./assemble.sh << parameters.unit_version >> /tmp/unit-sources"
+            " && SOURCES=/tmp/unit-sources build",
+            build_commands,
+        )
+        self.assertIn("unit_version", config["jobs"]["build"]["parameters"])
+
+    def test_units_mode_deploy_path_uses_channel_not_git_branch(self) -> None:
+        """The monorepo lives on master; master must never be a deploy dir."""
+        config = self.generate(
+            {"matrix.yml": self.UNITS_MATRIX},
+            settings=self.UNITS_SETTINGS,
+        )
+
+        commands = self.deploy_commands(config)
+        self.assertTrue(commands)
+        for command in commands:
+            self.assertNotIn("${CIRCLE_BRANCH}", command)
+        incoming = (
+            "~/incoming/${CIRCLE_PROJECT_REPONAME}/${DISTRO}/${ARCH}/"
+            "<< parameters.channel >>"
+        )
+        self.assertTrue(
+            any(incoming in command for command in commands),
+            commands,
+        )
+        self.assertIn("channel", config["jobs"]["deploy"]["parameters"])
+
+    def test_units_mode_absent_leaves_standard_repos_untouched(self) -> None:
+        """No units key -> no unit plumbing anywhere in the generated config.
+
+        Any stray parameter or command change here is a semantic diff that
+        would push a CI-firing commit to every packaging repo on the next
+        fleet regeneration.
+        """
+        config = self.generate({"one.spec": ARCH_SPEC.format(name="one")})
+
+        self.assertNotIn("unit_version", config["jobs"]["build"]["parameters"])
+        self.assertNotIn("channel", config["jobs"]["deploy"]["parameters"])
+        rendered = json.dumps(config)
+        self.assertNotIn("assemble.sh", rendered)
+        self.assertNotIn("parameters.channel", rendered)
+
 
 if __name__ == "__main__":
     unittest.main()

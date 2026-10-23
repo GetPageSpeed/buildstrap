@@ -103,6 +103,35 @@ dists_allowlist = project_settings.get("dists", [])
 #   - no enable_repos / no nginx-collection plumbing
 # Any settings.yml knob (e.g. explicit `archs:`) still wins.
 self_mode = bool(project_settings.get("self", False))
+# Units mode: matrix monorepos (php-rpm). `units_from_matrix: true` reads the
+# project's own matrix.yml (`versions:` mapping) and emits one build+deploy
+# workflow per unit instead of the single per-branch pair. Each unit:
+#   - assembles its flat $SOURCES dir via the repo's assemble.sh (per-version
+#     specs/patches/generated twins), then runs the standard `build`;
+#   - enables only its own channel repo, so php-devel and the NVR
+#     short-circuit resolve against that version's channel;
+#   - deploys to a fixed ~/incoming/<repo>/<dist>/<arch>/<channel>/ path —
+#     the monorepo lives on master, so ${CIRCLE_BRANCH} must never reach the
+#     deploy path.
+# Per-unit workflows keep workspaces isolated: a unit whose NVRs are all
+# published halts (cancels) only its own workflow, exactly like the retired
+# per-version repos. Absent the key, generation is byte-identical.
+units = {}
+if project_settings.get("units_from_matrix"):
+    if self_mode:
+        raise ValueError("units_from_matrix cannot be combined with self mode")
+    project_matrix_file = os.path.join(project_dir, "matrix.yml")
+    with open(project_matrix_file, "r") as f:
+        project_matrix = yaml.load(f)
+    for unit_version, unit_info in (project_matrix.get("versions") or {}).items():
+        channel = (unit_info or {}).get("channel")
+        if not channel:
+            raise ValueError(
+                f"matrix.yml versions[{unit_version!r}] has no channel"
+            )
+        units[str(channel)] = {"version": str(unit_version)}
+    if not units:
+        raise ValueError("units_from_matrix is set but matrix.yml has no versions")
 # A project whose every root spec declares the main package `BuildArch: noarch`
 # needs one build host per distro, not one per CPU architecture. Use the real
 # x86_64 lane so workflow names, runner selection, and incoming paths never
@@ -256,6 +285,10 @@ fi"""
 # CI-firing commit to every packaging repo (~18 workflows each) to no effect.
 # Consumers that cannot hit the bug keep a byte-identical config.
 deploy_branch = "${CIRCLE_BRANCH:-master}" if self_mode else "${CIRCLE_BRANCH}"
+# Units mode: the repo lives on master while each unit publishes to its own
+# channel directory, so the deploy path carries the per-job channel parameter.
+if units:
+    deploy_branch = "<< parameters.channel >>"
 
 command_incoming_mkdir = FoldedScalarString(
     "ssh -o StrictHostKeyChecking=no "
@@ -301,11 +334,23 @@ if collection_name == "nginx":
         },
     ]
 
+if self_mode:
+    build_command = "./utils/version-from-tag.sh && build"
+elif units:
+    # Assemble the unit's flat $SOURCES dir (version files + patches +
+    # rendered pecl specs + generated SCL twins), then run the stock build
+    # against it. SOURCES is honored by rpmbuilder's build script.
+    build_command = (
+        "./assemble.sh << parameters.unit_version >> /tmp/unit-sources"
+        " && SOURCES=/tmp/unit-sources build"
+    )
+else:
+    build_command = "build"
 build_steps += [
     {
         "run": {
             "name": "Run the build itself: this will do rpmlint and check RPMs existence among other things.",
-            "command": "./utils/version-from-tag.sh && build" if self_mode else "build",
+            "command": build_command,
         }
     },
 ]
@@ -363,6 +408,12 @@ if not self_mode:
     build_job_executor_parameters["enable_repos"] = "<< parameters.enable_repos >>"
     rpmbuilder_executor_parameters["enable_repos"] = {"type": "string", "default": ""}
     rpmbuilder_executor_environment["ENABLE_REPOS"] = "<< parameters.enable_repos >>"
+
+if units:
+    build_job_parameters["unit_version"] = {
+        "description": "matrix.yml version this job assembles and builds",
+        "type": "string",
+    }
 
 if collection_name == "nginx":
     build_job_parameters["plesk"] = {
@@ -473,6 +524,14 @@ circleci_config = {
     },
     "workflows": {},
 }
+
+# Units mode: the deploy path's channel segment is a job parameter (see
+# deploy_branch above).
+if units:
+    circleci_config["jobs"]["deploy"]["parameters"]["channel"] = {
+        "description": "Channel directory under ~/incoming/<repo>/<dist>/<arch>/",
+        "type": "string",
+    }
 
 # Opt-in smoke job template. Only emitted into `jobs:` when the project's
 # settings.yml carries a non-empty `post_deploy_smoke:` block. Keeps
@@ -624,6 +683,48 @@ for distro_name, distro_info in distros.items():
                     for value in combo_values
                     for pattern in dists_allowlist
                 ):
+                    continue
+
+                if units:
+                    # One isolated workflow per unit: a unit whose NVRs are all
+                    # published cancels only itself, and each workflow's
+                    # workspace holds only its own unit's RPMs.
+                    for channel, unit_info in units.items():
+                        unit_workflow = f"build-deploy-{dist}{version}-{arch}-{channel}"
+                        unit_build = f"build-{dist}{version}-{arch}-{channel}"
+                        unit_deploy = f"deploy-{dist}{version}-{arch}-{channel}"
+                        unit_filters = {"branches": {"only": ["master", "main"]}}
+                        unit_build_job = {
+                            "build": {
+                                "name": unit_build,
+                                "context": "build-deps",
+                                "dist": f"{dist}{version}",
+                                "filters": unit_filters,
+                                "enable_repos": f"getpagespeed-extras-{channel}",
+                                "unit_version": unit_info["version"],
+                            }
+                        }
+                        if arch == "aarch64":
+                            unit_build_job["build"]["resource_class"] = (
+                                arm_resource_class
+                            )
+                        unit_deploy_job = {
+                            "deploy": {
+                                "name": unit_deploy,
+                                "context": "deploy",
+                                "dist": f"{dist}{version}",
+                                "arch": arch,
+                                "channel": channel,
+                                "filters": unit_filters,
+                                "requires": [unit_build],
+                            }
+                        }
+                        workflows[unit_workflow] = {
+                            "jobs": [unit_build_job, unit_deploy_job]
+                        }
+                        deploy_lanes_by_branch_dist.setdefault(
+                            (channel, f"{dist}{version}"), []
+                        ).append(arch)
                     continue
 
                 workflow_name = get_workflow_name(dist, version, branch, arch)
