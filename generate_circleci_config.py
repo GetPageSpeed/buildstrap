@@ -526,12 +526,33 @@ circleci_config = {
 }
 
 # Units mode: the deploy path's channel segment is a job parameter (see
-# deploy_branch above).
+# deploy_branch above), and the deploy must halt on an empty workspace. On an
+# all-published unit the build job halts after persisting nothing; CircleCI
+# cancels the workflow via the curl in command_check_rpm_files_halt, but myci
+# treats that curl as a no-op and a halted job as SUCCESS, so deploy still
+# runs and its unmatched `scp *.rpm` glob dies as a blank-log exit 255
+# (getpagespeed-extras-release 2026-07-30; fixed there by this same guard).
 if units:
     circleci_config["jobs"]["deploy"]["parameters"]["channel"] = {
         "description": "Channel directory under ~/incoming/<repo>/<dist>/<arch>/",
         "type": "string",
     }
+    circleci_config["jobs"]["deploy"]["steps"].insert(
+        1,
+        {
+            "run": {
+                "name": "Halt when the workspace has nothing to deploy",
+                "command": LiteralScalarString(
+                    "if ls *.rpm 1> /dev/null 2>&1; then\n"
+                    '  echo "RPMs attached; deploying."\n'
+                    "else\n"
+                    '  echo "Attached workspace has no RPMs -- every NVR is already published. Nothing to deploy."\n'
+                    "  circleci-agent step halt\n"
+                    "fi\n"
+                ),
+            }
+        },
+    )
 
 # Opt-in smoke job template. Only emitted into `jobs:` when the project's
 # settings.yml carries a non-empty `post_deploy_smoke:` block. Keeps

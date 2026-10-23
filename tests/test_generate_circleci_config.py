@@ -584,6 +584,34 @@ BuildArch: noarch
         )
         self.assertIn("channel", config["jobs"]["deploy"]["parameters"])
 
+    def test_units_mode_deploy_halts_on_empty_workspace(self) -> None:
+        """An all-published unit must end green, not blank-log exit 255.
+
+        myci treats the build job's workflow-cancel curl as a no-op and a
+        halted job as SUCCESS, so without this guard deploy runs against an
+        empty workspace and `scp -q *.rpm` fails with a blank log
+        (getpagespeed-extras-release, 2026-07-30).
+        """
+        config = self.generate(
+            {"matrix.yml": self.UNITS_MATRIX},
+            settings=self.UNITS_SETTINGS,
+        )
+
+        steps = config["jobs"]["deploy"]["steps"]
+        self.assertIn("attach_workspace", steps[0])
+        guard = steps[1]["run"]["command"]
+        self.assertIn("circleci-agent step halt", guard)
+        self.assertIn("ls *.rpm", guard)
+        # The guard must precede every scp/ssh deploy step.
+        scp_index = next(
+            index
+            for index, step in enumerate(steps)
+            if isinstance(step, dict)
+            and "run" in step
+            and "scp" in step["run"]["command"]
+        )
+        self.assertGreater(scp_index, 1)
+
     def test_units_mode_absent_leaves_standard_repos_untouched(self) -> None:
         """No units key -> no unit plumbing anywhere in the generated config.
 
