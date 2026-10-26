@@ -545,6 +545,43 @@ BuildArch: noarch
             self.assertEqual(deploy["channel"], channel)
             self.assertEqual(deploy["requires"], [f"build-el7-x86_64-{channel}"])
 
+    def test_units_mode_lanes_restrict_each_unit(self) -> None:
+        """Per-unit `lanes` add a platform to one unit only.
+
+        php72 alone builds Amazon Linux 2 aarch64 (customer request); every
+        other unit keeps `unit_default_lanes` even though settings.yml now
+        lists the union of dists and archs.
+        """
+        config = self.generate(
+            {
+                "matrix.yml": (
+                    "versions:\n"
+                    '  "7.2": { scl: php72, channel: php72, pecl: "zip", lanes: "el7-x86_64 amzn2-aarch64" }\n'
+                    '  "7.3": { scl: php73, channel: php73, pecl: "zip" }\n'
+                )
+            },
+            settings=(
+                "dists:\n  - el7\n  - amzn2\n"
+                "archs:\n  - x86_64\n  - aarch64\n"
+                "lastversion: false\n"
+                "units_from_matrix: true\n"
+                "unit_default_lanes: [el7-x86_64]\n"
+            ),
+        )
+
+        self.assertEqual(
+            sorted(config["workflows"]),
+            [
+                "build-deploy-amzn2-aarch64-php72",
+                "build-deploy-el7-x86_64-php72",
+                "build-deploy-el7-x86_64-php73",
+            ],
+        )
+        jobs = config["workflows"]["build-deploy-amzn2-aarch64-php72"]["jobs"]
+        deploy = next(job["deploy"] for job in jobs if "deploy" in job)
+        self.assertEqual(deploy["arch"], "aarch64")
+        self.assertEqual(deploy["channel"], "php72")
+
     def test_units_mode_assembles_before_building(self) -> None:
         config = self.generate(
             {"matrix.yml": self.UNITS_MATRIX},

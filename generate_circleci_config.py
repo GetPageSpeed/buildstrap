@@ -129,7 +129,18 @@ if project_settings.get("units_from_matrix"):
             raise ValueError(
                 f"matrix.yml versions[{unit_version!r}] has no channel"
             )
-        units[str(channel)] = {"version": str(unit_version)}
+        # Optional per-unit lane allowlist ("el7-x86_64 amzn2-aarch64"); a
+        # unit without one builds settings.yml `unit_default_lanes`, or every
+        # dist/arch lane when that is unset too.
+        unit_lanes = (unit_info or {}).get("lanes") or project_settings.get(
+            "unit_default_lanes"
+        )
+        if isinstance(unit_lanes, str):
+            unit_lanes = unit_lanes.split()
+        units[str(channel)] = {
+            "version": str(unit_version),
+            "lanes": set(unit_lanes) if unit_lanes else None,
+        }
     if not units:
         raise ValueError("units_from_matrix is set but matrix.yml has no versions")
 # A project whose every root spec declares the main package `BuildArch: noarch`
@@ -711,6 +722,11 @@ for distro_name, distro_info in distros.items():
                     # published cancels only itself, and each workflow's
                     # workspace holds only its own unit's RPMs.
                     for channel, unit_info in units.items():
+                        if (
+                            unit_info["lanes"] is not None
+                            and f"{dist}{version}-{arch}" not in unit_info["lanes"]
+                        ):
+                            continue
                         unit_workflow = f"build-deploy-{dist}{version}-{arch}-{channel}"
                         unit_build = f"build-{dist}{version}-{arch}-{channel}"
                         unit_deploy = f"deploy-{dist}{version}-{arch}-{channel}"
