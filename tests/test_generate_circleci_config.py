@@ -649,6 +649,80 @@ BuildArch: noarch
         )
         self.assertGreater(scp_index, 1)
 
+    def test_opt_in_el6_never_joins_fleet_builds(self) -> None:
+        """EOL el6 is opt-in: no allowlist, wildcards and plain el* lists skip it.
+
+        Adding rhel 6 to matrix.json must not hand every packaging repo an
+        el6 lane (2026-10-27: el6 returned for php-rpm's CentOS 6 channels).
+        """
+        for settings in (
+            "archs:\n  - x86_64\n",
+            "archs:\n  - x86_64\ndists:\n  - el*\n",
+            "archs:\n  - x86_64\ndists:\n  - el7\n  - el*-x86_64\n",
+        ):
+            config = self.generate(
+                {"pkg.spec": ARCH_SPEC.format(name="pkg")}, settings=settings
+            )
+            self.assertFalse(
+                [name for name in config["workflows"] if "el6" in name],
+                settings,
+            )
+
+    def test_opt_in_el6_selected_by_literal_dists_entry(self) -> None:
+        config = self.generate(
+            {"pkg.spec": ARCH_SPEC.format(name="pkg")},
+            settings="archs:\n  - x86_64\ndists:\n  - el7\n  - el6\n",
+        )
+        el6 = [name for name in config["workflows"] if "el6" in name]
+        self.assertEqual(el6, ["build-deploy-el6-x86_64"])
+        jobs = config["workflows"]["build-deploy-el6-x86_64"]["jobs"]
+        build = next(job["build"] for job in jobs if "build" in job)
+        self.assertEqual(build["dist"], "el6")
+
+    def test_units_mode_el6_only_for_units_listing_the_lane(self) -> None:
+        """php-rpm: el6 lane for 7.0/5.3 only, never via unit_default_lanes."""
+        config = self.generate(
+            {
+                "matrix.yml": (
+                    "versions:\n"
+                    '  "5.3": { channel: php53, php_twin: none, lanes: "el6-x86_64" }\n'
+                    '  "7.0": { scl: php70, channel: php70, lanes: "el7-x86_64 el6-x86_64" }\n'
+                    '  "7.3": { scl: php73, channel: php73, pecl: "zip" }\n'
+                    '  "7.4": { scl: php74, channel: php74 }\n'
+                )
+            },
+            settings=(
+                "dists:\n  - el7\n  - el6\n"
+                "archs:\n  - x86_64\n"
+                "lastversion: false\n"
+                "units_from_matrix: true\n"
+                "unit_default_lanes: [el7-x86_64]\n"
+            ),
+        )
+        self.assertEqual(
+            sorted(config["workflows"]),
+            [
+                "build-deploy-el6-x86_64-php53",
+                "build-deploy-el6-x86_64-php70",
+                "build-deploy-el7-x86_64-php70",
+                "build-deploy-el7-x86_64-php73",
+                "build-deploy-el7-x86_64-php74",
+            ],
+        )
+        jobs = config["workflows"]["build-deploy-el6-x86_64-php53"]["jobs"]
+        build = next(job["build"] for job in jobs if "build" in job)
+        deploy = next(job["deploy"] for job in jobs if "deploy" in job)
+        self.assertEqual(build["dist"], "el6")
+        self.assertEqual(build["enable_repos"], "getpagespeed-extras-php53")
+        self.assertEqual(deploy["channel"], "php53")
+
+    def test_matrix_sh_maps_opt_in_el6_for_publishing(self) -> None:
+        """incoming.sh sources matrix.sh: el6 RPMs must map to redhat/6."""
+        self.assertIn('["el6"]="redhat/6"', (REPO_ROOT / "matrix.sh").read_text())
+        rhel = json.loads((REPO_ROOT / "matrix.json").read_text())["distros"]["rhel"]
+        self.assertEqual(rhel["opt_in_versions"], [6])
+        self.assertNotIn(6, rhel["versions"])
+
     def test_units_mode_absent_leaves_standard_repos_untouched(self) -> None:
         """No units key -> no unit plumbing anywhere in the generated config.
 

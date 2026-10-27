@@ -76,7 +76,12 @@ dists_array_s_list = [
     "declare -A dists=(",
 ]
 for distro_name, distro_config in distros.items():
-    for v in distro_config["versions"]:
+    # opt-in versions (EOL el6) are published by incoming.sh like any other
+    # dist, so matrix.sh maps them; the rpmbuilder image matrix below does not.
+    for v in distro_config["versions"] + [
+        v for v in distro_config.get("opt_in_versions", [])
+        if v not in distro_config["versions"]
+    ]:
         line_fmt = '  ["{}"]="{}"'
         dists_array_s_list.append(
             line_fmt.format(

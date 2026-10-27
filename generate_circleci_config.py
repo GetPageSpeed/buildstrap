@@ -641,10 +641,27 @@ def get_deploy_job_name(dist, version, branch, arch):
     return f"deploy-{dist}{version}-{branch}-{arch}"
 
 
+def explicitly_selects(dist_version, arch):
+    """True when the project names this opt-in lane literally.
+
+    Opt-in distro versions (matrix.yml `opt_in_versions`, e.g. EOL el6) never
+    join a build matrix through wildcards or an absent allowlist: only an
+    exact `dists:` entry (el6 / el6-x86_64) selects them.
+    """
+    return any(
+        entry in (dist_version, f"{dist_version}-{arch}")
+        for entry in dists_allowlist
+    )
+
+
 for distro_name, distro_info in distros.items():
     dist = distro_info.get("dist", distro_name)
     versions = distro_info.get("versions", [])
-    for version in versions:
+    opt_in_versions = distro_info.get("opt_in_versions", [])
+    for version in list(versions) + [
+        v for v in opt_in_versions if v not in versions
+    ]:
+        opt_in = version in opt_in_versions
         # Per-version distro overrides — primarily the plesk branch axis:
         # matrix.yml's rhel.version_overrides.10.has_plesk=False excludes
         # el10-plesk workflows even though el10 ∈ only_dists: ["el*"].
@@ -716,6 +733,8 @@ for distro_name, distro_info in distros.items():
                     for pattern in dists_allowlist
                 ):
                     continue
+                if opt_in and not explicitly_selects(f"{dist}{version}", arch):
+                    continue
 
                 if units:
                     # One isolated workflow per unit: a unit whose NVRs are all
@@ -725,6 +744,12 @@ for distro_name, distro_info in distros.items():
                         if (
                             unit_info["lanes"] is not None
                             and f"{dist}{version}-{arch}" not in unit_info["lanes"]
+                        ):
+                            continue
+                        # An opt-in lane builds only for units listing it.
+                        if opt_in and (
+                            unit_info["lanes"] is None
+                            or f"{dist}{version}-{arch}" not in unit_info["lanes"]
                         ):
                             continue
                         unit_workflow = f"build-deploy-{dist}{version}-{arch}-{channel}"
