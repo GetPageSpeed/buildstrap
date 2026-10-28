@@ -420,6 +420,17 @@ if not self_mode:
     rpmbuilder_executor_parameters["enable_repos"] = {"type": "string", "default": ""}
     rpmbuilder_executor_environment["ENABLE_REPOS"] = "<< parameters.enable_repos >>"
 
+# settings.yml `failure_tolerance` pins rpmbuilder's FAILURE_TOLERANCE (the
+# fraction of a job's specs allowed to fail) for the whole repo. Package
+# monorepos set "0.0": at the 0.1 default a 20-spec unit published green with
+# two failed specs (php-rpm php80, 2026-10-29). The nginx collection keeps its
+# per-branch parameter instead.
+project_failure_tolerance = project_settings.get("failure_tolerance")
+if project_failure_tolerance is not None:
+    if collection_name == "nginx":
+        raise ValueError("failure_tolerance in settings.yml conflicts with the nginx per-branch parameter")
+    rpmbuilder_executor_environment["FAILURE_TOLERANCE"] = str(project_failure_tolerance)
+
 if units:
     build_job_parameters["unit_version"] = {
         "description": "matrix.yml version this job assembles and builds",

@@ -723,6 +723,22 @@ BuildArch: noarch
         self.assertEqual(rhel["opt_in_versions"], [6])
         self.assertNotIn(6, rhel["versions"])
 
+    def test_settings_failure_tolerance_reaches_rpmbuilder(self) -> None:
+        """settings.yml failure_tolerance becomes rpmbuilder's FAILURE_TOLERANCE.
+
+        php-rpm 2026-10-29: two of twenty php80 specs failed and the unit still
+        published green under rpmbuilder's 0.1 default.
+        """
+        config = self.generate(
+            {"matrix.yml": self.UNITS_MATRIX},
+            settings=self.UNITS_SETTINGS + 'failure_tolerance: "0.0"\n',
+        )
+        environment = config["executors"]["rpmbuilder"]["environment"]
+        self.assertEqual(environment["FAILURE_TOLERANCE"], "0.0")
+
+        default = self.generate({"one.spec": ARCH_SPEC.format(name="one")})
+        self.assertNotIn("FAILURE_TOLERANCE", default["executors"]["rpmbuilder"]["environment"])
+
     def test_units_mode_absent_leaves_standard_repos_untouched(self) -> None:
         """No units key -> no unit plumbing anywhere in the generated config.
 
