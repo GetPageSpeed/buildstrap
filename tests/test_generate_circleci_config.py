@@ -267,6 +267,24 @@ BuildArch: noarch
         self.assertEqual(build["enable_repos"], "getpagespeed-extras-plesk")
         self.assertEqual(build["filters"]["branches"]["only"], ["plesk"])
 
+    def test_edge_channel_builds_el7_through_el10_on_both_arches(self) -> None:
+        """EDGE gained EL7 on 2026-10-29 (Everpatch Ultra customers)."""
+        config = self.generate(
+            {"edge.spec": ARCH_SPEC.format(name="edge")},
+            settings="collection: nginx\nbranch: edge\n",
+        )
+        workflows = config["workflows"]
+        for dist in ("el7", "el8", "el9", "el10"):
+            for arch in ("x86_64", "aarch64"):
+                self.assertIn(f"build-deploy-{dist}-{arch}", workflows)
+        build = next(
+            job["build"]
+            for job in workflows["build-deploy-el7-x86_64"]["jobs"]
+            if "build" in job
+        )
+        self.assertEqual(build["enable_repos"], "getpagespeed-extras-edge")
+        self.assertFalse(any("fc" in name or "sles" in name for name in workflows))
+
     def test_standalone_repo_can_enable_its_publish_channel(self) -> None:
         config = self.generate(
             {"php.spec": ARCH_SPEC.format(name="php")},
