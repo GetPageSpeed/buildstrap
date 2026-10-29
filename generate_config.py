@@ -75,13 +75,24 @@ dists_array_s_list = [
     "# mapping of dists to directories:",
     "declare -A dists=(",
 ]
-for distro_name, distro_config in distros.items():
-    # opt-in versions (EOL el6) are published by incoming.sh like any other
-    # dist, so matrix.sh maps them; the rpmbuilder image matrix below does not.
-    for v in distro_config["versions"] + [
+
+def all_versions(distro_config):
+    """Fleet versions plus opt-in ones (EOL el6), opt-ins last.
+
+    Opt-in versions are built only for projects naming them, but they are
+    published by incoming.sh (matrix.sh) and need a maintained rpmbuilder
+    image like any other dist: a frozen image silently misses build-script
+    fixes (el6 ran a 2023 `build` without the published-NVR short-circuit
+    until 2026-10-29).
+    """
+    return distro_config["versions"] + [
         v for v in distro_config.get("opt_in_versions", [])
         if v not in distro_config["versions"]
-    ]:
+    ]
+
+
+for distro_name, distro_config in distros.items():
+    for v in all_versions(distro_config):
         line_fmt = '  ["{}"]="{}"'
         dists_array_s_list.append(
             line_fmt.format(
@@ -129,7 +140,7 @@ with open("matrix.json", "w", encoding="utf-8") as f:
 # Used in matrix: of its GitHub Actions workflow
 distro_versions = []
 for distro_name, distro_config in distros.items():
-    for v in distro_config["versions"]:
+    for v in all_versions(distro_config):
         distro_versions.append({"os": distro_config["rpmbuilder_name"], "version": v})
 with open("distro_versions.json", "w", encoding="utf-8") as f:
     json.dump({"include": distro_versions}, f, indent=4)
@@ -137,7 +148,7 @@ with open("distro_versions.json", "w", encoding="utf-8") as f:
 # Write defaults file as well:
 default_lines = []
 for distro_name, distro_config in distros.items():
-    for v in distro_config["versions"]:
+    for v in all_versions(distro_config):
         default_lines.append(f"{distro_config['rpmbuilder_name']} {v}")
 # write to defaults file at ../rpmbuilder/defaults
 with open("defaults", "w", encoding="utf-8") as f:

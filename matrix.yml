@@ -39,8 +39,8 @@ distros:
       - 10
     # EOL versions built only for projects naming them literally in `dists:`
     # (and, in units mode, in a unit's `lanes`); never fleet-wide. el6 serves
-    # php-rpm's CentOS 6 Everpatch channels. Published via matrix.sh only:
-    # not in rpmbuilder's image matrix (getpagespeed/rpmbuilder:el6 is frozen).
+    # php-rpm's CentOS 6 Everpatch channels. Opt-in versions still get a
+    # maintained rpmbuilder image (distro_versions.json; el6 is amd64-only).
     opt_in_versions:
       - 6
     # Override settings for specific versions
