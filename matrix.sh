@@ -11,7 +11,6 @@ declare -A dists=(
   ["fc44"]="fedora/44"
   ["amzn2"]="amzn/2"
   ["amzn2023"]="amzn/2023"
-  ["sles16"]="sles/16"
 )
 # mapping of directories to full descriptive names:
 declare -A os_long=(
