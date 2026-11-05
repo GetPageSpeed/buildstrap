@@ -686,6 +686,28 @@ BuildArch: noarch
                 settings,
             )
 
+    def test_retired_distro_never_emits_a_lane(self) -> None:
+        """matrix.json `retired: true` (SLES, 2026-11-06) wins over any versions
+        list and over a literal `dists:` entry naming the lane."""
+        matrix_config = json.loads((REPO_ROOT / "matrix.json").read_text())
+        matrix_config["distros"]["sles"]["retired"] = True
+        matrix_config["distros"]["sles"]["versions"] = [16]
+        for settings in (
+            "archs:\n  - x86_64\n",
+            "archs:\n  - x86_64\ndists:\n  - el9\n  - sles16\n",
+        ):
+            config = self.generate(
+                {"pkg.spec": ARCH_SPEC.format(name="pkg")},
+                settings=settings,
+                matrix_config=matrix_config,
+            )
+            self.assertFalse(
+                [name for name in config["workflows"] if "sles" in name], settings
+            )
+            self.assertTrue(
+                [name for name in config["workflows"] if "el9" in name], settings
+            )
+
     def test_opt_in_el6_selected_by_literal_dists_entry(self) -> None:
         config = self.generate(
             {"pkg.spec": ARCH_SPEC.format(name="pkg")},

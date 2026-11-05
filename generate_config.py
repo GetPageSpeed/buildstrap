@@ -37,6 +37,14 @@ distros = distros_config["distros"]
 for distro, distro_config in distros.items():
     if "dir" not in distro_config:
         distro_config["dir"] = distro_config["dist"]
+    # A retired distro keeps its matrix.json key and os_long name (site sync,
+    # repoview titles and republish-hold.sh read them) but builds nothing:
+    # no lanes, no matrix.sh dists entry, no rpmbuilder image. Its published
+    # trees (retired_versions) stay served, frozen.
+    if distro_config.get("retired", False):
+        distro_config["versions"] = []
+        distro_config.pop("opt_in_versions", None)
+        continue
     if "versions_check" in distro_config and not distro_config["versions_check"]:
         continue
     distro_version = lastversion.latest(distro).release[0]

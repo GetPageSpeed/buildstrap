@@ -82,6 +82,11 @@ distros:
     # Our SLES build artifacts install cleanly on openSUSE Leap too — surface both in the wizard.
     human_label: "SLES / openSUSE Leap"
     os_versions: 1
+    # Retired 2026-11-06 (builder-scripts reminder 152CAF9D): zero SUSE license
+    # heartbeats ever, SLES traffic = our builders + third-party CI. No lanes,
+    # no rpmbuilder image; /sles/15 and /sles/16 stay served, frozen.
+    retired: true
+    retired_versions: [15, 16]
     docker: opensuse/leap
     rpmbuilder_name: opensuse
 collections:

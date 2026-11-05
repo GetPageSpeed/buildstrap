@@ -666,6 +666,10 @@ def explicitly_selects(dist_version, arch):
 
 
 for distro_name, distro_info in distros.items():
+    # Retired distros (matrix.yml `retired: true`) stay in matrix.json for
+    # their consumers but must never emit a lane, whatever `versions` holds.
+    if distro_info.get("retired", False):
+        continue
     dist = distro_info.get("dist", distro_name)
     versions = distro_info.get("versions", [])
     opt_in_versions = distro_info.get("opt_in_versions", [])
